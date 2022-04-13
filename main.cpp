@@ -19,6 +19,24 @@ LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+	//ウィンドゥサイズ
+	const int window_width = 1280; //横幅
+	const int window_height = 720; //縦幅
+
+	//ウィンドゥクラスの設定
+	WNDCLASSEX w{};
+	w.cbSize = sizeof(WNDCLASSEX);
+	w.lpfnWndProc = (WNDPROC)WindowProc;      //ウィンドゥプロシージャを設定 
+	w.lpszClassName =L"DX12Sample";           //ウィンドゥクラス名
+	w.hInstance = GetModuleHandle(nullptr);   //ウィンドゥハンドル
+	w.hCursor = LoadCursor(NULL, IDC_ARROW);  //カーソル指定
+
+	//ウィンドゥクラスをOSに登録
+	RegisterClassEx(&w);
+	//ウィンドウサイズ {X座標,Y座標,横幅,縦幅}
+	RECT wrc = { 0,0,window_width,window_height };
+	//自動でサイズを補正
+	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 	//コンソールへの文字出力
 	OutputDebugStringA("Hello DilectX!!\n");
 
