@@ -27,7 +27,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	WNDCLASSEX w{};
 	w.cbSize = sizeof(WNDCLASSEX);
 	w.lpfnWndProc = (WNDPROC)WindowProc;      //ウィンドゥプロシージャを設定 
-	w.lpszClassName =L"DX12Sample";           //ウィンドゥクラス名
+	w.lpszClassName = L"DX12Sample";           //ウィンドゥクラス名
 	w.hInstance = GetModuleHandle(nullptr);   //ウィンドゥハンドル
 	w.hCursor = LoadCursor(NULL, IDC_ARROW);  //カーソル指定
 
@@ -52,6 +52,35 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//ウィンドゥを表示状態にする
 	ShowWindow(hwnd, SW_SHOW);
+
+	MSG msg{}; //メッセージ
+
+	// DirectX初期化処理　ここから
+
+	// DirectX初期化処理　ここまで
+
+	//ゲームループ
+	while (true)
+	{
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		if (msg.message == WM_QUIT)
+		{
+			break;
+		}
+
+	// DirectX毎フレーム処理　ここから
+
+	// DirectX毎フレーム処理　ここまで
+	
+	}
+
+	//ウィンドゥクラスを登録解除
+	UnregisterClass(w.lpszClassName, w.hInstance);
 	//コンソールへの文字出力
 	OutputDebugStringA("Hello DilectX!!\n");
 
