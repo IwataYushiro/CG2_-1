@@ -37,6 +37,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	RECT wrc = { 0,0,window_width,window_height };
 	//自動でサイズを補正
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
+
+	HWND hwnd = CreateWindow(w.lpszClassName,   //クラス名
+		L"DirectXGame",							//タイトルバーの文字
+		WS_OVERLAPPEDWINDOW,					//標準的なウィンドウスタイル
+		CW_USEDEFAULT,							//表示X座標(OSに任せる)
+		CW_USEDEFAULT,							//表示Y座標(OSに任せる)
+		wrc.right - wrc.left,					//ウィンドウ横幅
+		wrc.bottom - wrc.top,					//ウィンドウ縦幅
+		nullptr,								//親ウィンドウハンドル
+		nullptr,								//メニューハンドル
+		w.hInstance,							//呼び出しアプリケーションハンドル
+		nullptr);								//オプション
+
+	//ウィンドゥを表示状態にする
+	ShowWindow(hwnd, SW_SHOW);
 	//コンソールへの文字出力
 	OutputDebugStringA("Hello DilectX!!\n");
 
