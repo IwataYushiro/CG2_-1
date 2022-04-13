@@ -172,6 +172,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rtvHeapDesc.NumDescriptors = swapChainDesc.BufferCount; // 裏表の2つ
 	// デスクリプタヒープの生成
 	device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
+
+	// バックバッファ
+	std::vector<ID3D12Resource*> backBuffers;
+	backBuffers.resize(swapChainDesc.BufferCount);
+
+
 	// DirectX初期化処理　ここまで
 	//ゲームループ
 	while (true)
