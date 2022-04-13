@@ -177,6 +177,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	std::vector<ID3D12Resource*> backBuffers;
 	backBuffers.resize(swapChainDesc.BufferCount);
 
+	// スワップチェーンの全てのバッファについて処理する
+	for (size_t i = 0; i < backBuffers.size(); i++) {
+		// スワップチェーンからバッファを取得
+		swapChain->GetBuffer((UINT)i, IID_PPV_ARGS(&backBuffers[i]));
+		// デスクリプタヒープのハンドルを取得
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+		// 裏か表かでアドレスがずれる
+		rtvHandle.ptr += i * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
+		// レンダーターゲットビューの設定
+		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+		// シェーダーの計算結果をSRGBに変換して書き込む
+		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		// レンダーターゲットビューの生成
+		device->CreateRenderTargetView(backBuffers[i], &rtvDesc, rtvHandle);
+	}
+
 
 	// DirectX初期化処理　ここまで
 	//ゲームループ
