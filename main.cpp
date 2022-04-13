@@ -70,7 +70,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	IDXGISwapChain4* swapChain = nullptr;
 	ID3D12CommandAllocator* cmdAllocator = nullptr;
 	ID3D12GraphicsCommandList* commandList = nullptr;
-	ID3D12CommandQueue* commandQwewe = nullptr;
+	ID3D12CommandQueue* commandQueue = nullptr;
 	ID3D12DescriptorHeap* rtvHeap = nullptr;
 
 	//DXGIファクトリーの生成
@@ -144,6 +144,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		IID_PPV_ARGS(&commandList));
 	assert(SUCCEEDED(result));
 	
+	//コマンドキューの設定
+	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
+	//コマンドキューを生成
+	result = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
+	assert(SUCCEEDED(result));
 	// DirectX初期化処理　ここまで
 	//ゲームループ
 	while (true)
