@@ -5,6 +5,7 @@
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+
 //ウィンドゥプロシージャ
 LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -61,7 +62,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	MSG msg{}; //メッセージ
 
 	// DirectX初期化処理　ここから
-
+	HRESULT result;
+	ID3D12Device* device = nullptr;
+	IDXGIFactory7* dxgiFactory = nullptr;
+	IDXGISwapChain4* swapChain = nullptr;
+	ID3D12CommandAllocator* cmdAllocator = nullptr;
+	ID3D12GraphicsCommandList* commandList = nullptr;
+	ID3D12CommandQueue* commandQwewe = nullptr;
+	ID3D12DescriptorHeap* rtvHeap = nullptr;
 	// DirectX初期化処理　ここまで
 
 	//ゲームループ
