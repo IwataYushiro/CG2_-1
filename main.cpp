@@ -72,7 +72,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ID3D12GraphicsCommandList* commandList = nullptr;
 	ID3D12CommandQueue* commandQwewe = nullptr;
 	ID3D12DescriptorHeap* rtvHeap = nullptr;
-	// DirectX初期化処理　ここまで
 
 	//DXGIファクトリーの生成
 	result = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
@@ -108,6 +107,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+
+	// 対応レベルの配列
+	D3D_FEATURE_LEVEL levels[] =
+	{
+		D3D_FEATURE_LEVEL_12_1,
+		D3D_FEATURE_LEVEL_12_0,
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_11_0,
+	};
+
+	D3D_FEATURE_LEVEL featureLevel;
+
+	for (size_t i = 0; i < _countof(levels); i++)
+	{
+		//採用したアダプターでデバイスを生成
+		result=D3D12CreateDevice(tmpAdapter,levels[i],
+			IID_PPV_ARGS(&device));
+		if (result == S_OK) {
+			// デバイスを生成できた時点でループを抜ける
+			featureLevel = levels[i];
+			break;
+		}
+	}
+	// DirectX初期化処理　ここまで
 	//ゲームループ
 	while (true)
 	{
