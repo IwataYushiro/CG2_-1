@@ -251,6 +251,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
 		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			//表示状態へ
 		commandList->ResourceBarrier(1, &barrierDesc);
+		
+		// コマンドのフラッシュ
+		
+		// 命令のクローズ
+		result = commandList->Close();
+		assert(SUCCEEDED(result));
+		// コマンドリストの実行
+		ID3D12CommandList* commandLists[] = { commandList };
+		commandQueue->ExecuteCommandLists(1, commandLists);
+
+		// 画面に表示するバッファをフリップ(裏表の入替え)
+		result = swapChain->Present(1, 0);
+		assert(SUCCEEDED(result));
+
 		// DirectX毎フレーム処理　ここまで
 
 	}
