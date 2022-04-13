@@ -265,6 +265,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		result = swapChain->Present(1, 0);
 		assert(SUCCEEDED(result));
 
+		//
+		commandQueue->Signal(fence, ++fenceVal);
+		if (fence->GetCompletedValue() != fenceVal)
+		{
+			HANDLE event = CreateEvent(nullptr, false, false, nullptr);
+			fence->SetEventOnCompletion(fenceVal, event);
+			WaitForSingleObject(event, INFINITE);
+			CloseHandle(event);
+		}
+
+		//
+		result = cmdAllocator->Reset();
+		assert(SUCCEEDED(result));
+		//
+		result = commandList->Reset(cmdAllocator, nullptr);
+		assert(SUCCEEDED(result));
 		// DirectX–ˆƒtƒŒ[ƒ€ˆ—@‚±‚±‚Ü‚Å
 
 	}
