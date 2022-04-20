@@ -266,6 +266,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	vdView.SizeInBytes = sizeVB;
 	// 頂点1つ分のデータサイズ
 	vdView.StrideInBytes = sizeof(XMFLOAT3);
+
+	ID3DBlob* vsBlob = nullptr;		//頂点シェーダーオブジェクト
+	ID3DBlob* psBlob = nullptr;		//ピクセルシェーダーオブジェクト
+	ID3DBlob* errorBlob = nullptr;	//エラーオブジェクト
+
+	//頂点シェーダーの読み込みとコンパイル
+	result = D3DCompileFromFile(
+		L"BasicVS.hlsl",								//シェーダーファイル名
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//インクルード可能にする
+		"main", "vs_5_0",								//エントリーポイント名、シェーダーモデル指定
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,//デバック用設定
+		0,
+		&vsBlob, &errorBlob);
+
 	// 描画初期化処理　ここまで
 
 	//ゲームループ
