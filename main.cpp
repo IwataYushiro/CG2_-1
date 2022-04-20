@@ -222,7 +222,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	};
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
-	
+
 	//頂点バッファの設定
 	D3D12_HEAP_PROPERTIES heapProp{};		//ヒープ設定
 	heapProp.Type = D3D12_HEAP_TYPE_UPLOAD; //GPUへの転送用
@@ -288,92 +288,101 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		std::string error;
 		error.resize(errorBlob->GetBufferSize()),
 
-		std::copy_n((char*)errorBlob->GetBufferPointer(),
-			errorBlob->GetBufferSize(),
-			error.begin());
+			std::copy_n((char*)errorBlob->GetBufferPointer(),
+				errorBlob->GetBufferSize(),
+				error.begin());
 		error += "\n";
 		//エラー内容を出力ウィンドゥに表示
 		OutputDebugStringA(error.c_str());
 		assert(0);
 	}
-	// 描画初期化処理　ここまで
 
-	//ゲームループ
-	while (true)
-	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	//頂点レイアウト
+	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+			"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,
+			D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
+		},//(1行で書いた方が見やすい)
+	};
+		// 描画初期化処理　ここまで
 
-		if (msg.message == WM_QUIT)
+		//ゲームループ
+		while (true)
 		{
-			break;
+			if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
+
+			if (msg.message == WM_QUIT)
+			{
+				break;
+			}
+
+			// DirectX毎フレーム処理　ここから
+
+			// バックバッファの番号を取得(2つなので0番か1番)
+			UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
+			// 1.リソースバリアで書き込み可能に変更
+			D3D12_RESOURCE_BARRIER barrierDesc{};
+			barrierDesc.Transition.pResource = backBuffers[bbIndex]; // バックバッファを指定
+			barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
+			barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
+			commandList->ResourceBarrier(1, &barrierDesc);
+
+			// 2.描画先の変更
+			// レンダーターゲットビューのハンドルを取得
+			D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+			rtvHandle.ptr += bbIndex * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
+			commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+
+			// 3.画面クリア			R	  G		B	A
+			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
+			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+
+			// 4.描画コマンドここから
+
+			// 4.描画コマンドここまで
+
+			// 5.リソースバリアを戻す
+			barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
+			barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			//表示状態へ
+			commandList->ResourceBarrier(1, &barrierDesc);
+
+			// コマンドのフラッシュ
+
+			// 命令のクローズ
+			result = commandList->Close();
+			assert(SUCCEEDED(result));
+			// コマンドリストの実行
+			ID3D12CommandList* commandLists[] = { commandList };
+			commandQueue->ExecuteCommandLists(1, commandLists);
+
+			// 画面に表示するバッファをフリップ(裏表の入替え)
+			result = swapChain->Present(1, 0);
+			assert(SUCCEEDED(result));
+
+			//
+			commandQueue->Signal(fence, ++fenceVal);
+			if (fence->GetCompletedValue() != fenceVal)
+			{
+				HANDLE event = CreateEvent(nullptr, false, false, nullptr);
+				fence->SetEventOnCompletion(fenceVal, event);
+				WaitForSingleObject(event, INFINITE);
+				CloseHandle(event);
+			}
+
+			//
+			result = cmdAllocator->Reset();
+			assert(SUCCEEDED(result));
+			//
+			result = commandList->Reset(cmdAllocator, nullptr);
+			assert(SUCCEEDED(result));
+			// DirectX毎フレーム処理　ここまで
+
 		}
-
-		// DirectX毎フレーム処理　ここから
-
-		// バックバッファの番号を取得(2つなので0番か1番)
-		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
-		// 1.リソースバリアで書き込み可能に変更
-		D3D12_RESOURCE_BARRIER barrierDesc{};
-		barrierDesc.Transition.pResource = backBuffers[bbIndex]; // バックバッファを指定
-		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
-		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
-		commandList->ResourceBarrier(1, &barrierDesc);
-
-		// 2.描画先の変更
-		// レンダーターゲットビューのハンドルを取得
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-		rtvHandle.ptr += bbIndex * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
-		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
-
-		// 3.画面クリア			R	  G		B	A
-		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
-		// 4.描画コマンドここから
-
-		// 4.描画コマンドここまで
-
-		// 5.リソースバリアを戻す
-		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
-		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			//表示状態へ
-		commandList->ResourceBarrier(1, &barrierDesc);
-
-		// コマンドのフラッシュ
-
-		// 命令のクローズ
-		result = commandList->Close();
-		assert(SUCCEEDED(result));
-		// コマンドリストの実行
-		ID3D12CommandList* commandLists[] = { commandList };
-		commandQueue->ExecuteCommandLists(1, commandLists);
-
-		// 画面に表示するバッファをフリップ(裏表の入替え)
-		result = swapChain->Present(1, 0);
-		assert(SUCCEEDED(result));
-
-		//
-		commandQueue->Signal(fence, ++fenceVal);
-		if (fence->GetCompletedValue() != fenceVal)
-		{
-			HANDLE event = CreateEvent(nullptr, false, false, nullptr);
-			fence->SetEventOnCompletion(fenceVal, event);
-			WaitForSingleObject(event, INFINITE);
-			CloseHandle(event);
-		}
-
-		//
-		result = cmdAllocator->Reset();
-		assert(SUCCEEDED(result));
-		//
-		result = commandList->Reset(cmdAllocator, nullptr);
-		assert(SUCCEEDED(result));
-		// DirectX毎フレーム処理　ここまで
-
-	}
 
 	//ウィンドゥクラスを登録解除
 	UnregisterClass(w.lpszClassName, w.hInstance);
