@@ -223,11 +223,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		w.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
 		(void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
+	
 	//キーボードデバイスの生成
 	IDirectInputDevice8* keyboard = nullptr;
 	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
 	assert(SUCCEEDED(result));
 	
+	//入力データ形式のセット
+	result = keyboard->SetDataFormat(&c_dfDIKeyboard); //標準形式
+	assert(SUCCEEDED(result));
+
 	// DirectX初期化処理　ここまで
 
 	// 描画初期化処理　ここから
