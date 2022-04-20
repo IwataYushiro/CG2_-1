@@ -447,9 +447,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 3.画面クリア			R	  G		B	A
-		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
+		if (key[DIK_SPACE])
+		{
+			FLOAT clearColor[] = { 1.0f,0.5f,0.5f,0.0f };
+			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		}
+		else
+		{
+			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
+			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		}
+		
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
 		D3D12_VIEWPORT viewport{};
