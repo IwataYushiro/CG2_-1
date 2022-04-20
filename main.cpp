@@ -425,6 +425,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		viewport.MaxDepth = 1.0f;
 		//ビューポート設定コマンドを、コマンドリストに積む
 		commandList->RSSetViewports(1, &viewport);
+
+		//シザー矩形
+		D3D12_RECT scissorRect{};
+		scissorRect.left = 0;
+		scissorRect.right = scissorRect.left + window_width;
+		scissorRect.top = 0;
+		scissorRect.bottom = scissorRect.top + window_height;
+		//シザー矩形設定コマンドを、コマンドリストに積む
+		commandList->RSSetScissorRects(1, &scissorRect);
 		// 4.描画コマンドここまで
 
 		// 5.リソースバリアを戻す
