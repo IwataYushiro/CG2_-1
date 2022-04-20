@@ -434,6 +434,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		scissorRect.bottom = scissorRect.top + window_height;
 		//シザー矩形設定コマンドを、コマンドリストに積む
 		commandList->RSSetScissorRects(1, &scissorRect);
+
+		//パイプラインステートとルートシグネチャの設定コマンド
+		commandList->SetPipelineState(pipelineState);
+		commandList->SetGraphicsRootSignature(rootSignature);
+
 		// 4.描画コマンドここまで
 
 		// 5.リソースバリアを戻す
