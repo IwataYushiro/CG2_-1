@@ -443,6 +443,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	//三角形リスト
 		// 頂点バッファビューの設定コマンド
 		commandList->IASetVertexBuffers(0, 1, &vdView);
+		
+		//描画コマンド
+		commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
 		// 4.描画コマンドここまで
 
 		// 5.リソースバリアを戻す
