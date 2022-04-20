@@ -372,7 +372,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	pipelineDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;			//標準設定
 	//ラスタライザの設定
 	pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;	//カリングしない
-	pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
+	pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 	//ポリゴン内塗りつぶし
 	pipelineDesc.RasterizerState.DepthClipEnable = true;			//深度クリッピングを有効に
 	//ブレンドステートの設定
@@ -462,10 +462,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
 		D3D12_VIEWPORT viewport{};
-		viewport.Width = window_width;
-		viewport.Height = window_height;
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
+		viewport.Width = window_width/2;
+		viewport.Height = window_height/4;
+		viewport.TopLeftX = 500;
+		viewport.TopLeftY = 100;
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 		//ビューポート設定コマンドを、コマンドリストに積む
