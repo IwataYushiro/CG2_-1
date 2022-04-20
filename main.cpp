@@ -4,9 +4,12 @@
 #include <cassert>
 #include <vector>
 #include <string>
+#include <DirectXMath.h>
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+
+using namespace DirectX;
 
 //ウィンドゥプロシージャ
 LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
