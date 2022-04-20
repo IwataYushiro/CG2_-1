@@ -211,6 +211,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	// DirectX初期化処理　ここまで
+	
+	// 描画初期化処理　ここから
+	
+	// 描画初期化処理　ここまで
+	
 	//ゲームループ
 	while (true)
 	{
