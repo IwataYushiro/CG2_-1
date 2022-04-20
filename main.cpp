@@ -256,6 +256,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//繋がりを解除
 	vertBuff->Unmap(0, nullptr);
 
+	//頂点バッファビューの作成
+	D3D12_VERTEX_BUFFER_VIEW vdView{};
+	// GPU仮想アドレス
+	vdView.BufferLocation = vertBuff->GetGPUVirtualAddress();
+	// 頂点バッファのサイズ
+	vdView.SizeInBytes = sizeVB;
+	// 頂点1つ分のデータサイズ
+	vdView.StrideInBytes = sizeof(XMFLOAT3);
 	// 描画初期化処理　ここまで
 
 	//ゲームループ
