@@ -297,6 +297,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		assert(0);
 	}
 
+	//ピクセルシェーダーの読み込みとコンパイル
+	result = D3DCompileFromFile(
+		L"BasicPS.hlsl",								//シェーダーファイル名
+		nullptr,
+		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//インクルード可能にする
+		"main", "ps_5_0",								//エントリーポイント名、シェーダーモデル指定
+		D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION,//デバック用設定
+		0,
+		&psBlob, &errorBlob);
+	//エラーなら
+	if (FAILED(result))
+	{
+		//errorBlodからエラー内容をstring型にコピー
+		std::string error;
+		error.resize(errorBlob->GetBufferSize()),
+
+			std::copy_n((char*)errorBlob->GetBufferPointer(),
+				errorBlob->GetBufferSize(),
+				error.begin());
+		error += "\n";
+		//エラー内容を出力ウィンドゥに表示
+		OutputDebugStringA(error.c_str());
+		assert(0);
+	}
 	//頂点レイアウト
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
 		{
@@ -343,8 +367,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	assert(SUCCEEDED(result));
 	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
 		IID_PPV_ARGS(&rootSignature));
+	assert(SUCCEEDED(result));
+	rootSigBlob->Release();
 	// パイプラインにルートシグネチャをセット
 	pipelineDesc.pRootSignature = rootSignature;
+	
+	//
+	ID3D12PipelineState* pipelineState = nullptr;
+	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
+	assert(SUCCEEDED(result));
 		// 描画初期化処理　ここまで
 
 		//ゲームループ
