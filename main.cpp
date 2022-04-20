@@ -474,7 +474,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//シザー矩形
 		D3D12_RECT scissorRect{};
 		scissorRect.left = 0;
-		scissorRect.right = scissorRect.left + window_width/1.5;
+		scissorRect.right = scissorRect.left + window_width/1.5f;
 		scissorRect.top = 0;
 		scissorRect.bottom = scissorRect.top + window_height;
 		//シザー矩形設定コマンドを、コマンドリストに積む
