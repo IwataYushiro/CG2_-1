@@ -211,11 +211,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	// DirectX初期化処理　ここまで
-	
+
 	// 描画初期化処理　ここから
+	XMFLOAT3 vertices[] = {
+		{-0.5f,-0.5f,0.0f},//左下
+		{-0.5f,+0.5f,0.0f},//左上
+		{+0.5f,-0.5f,0.0f},//右下
+	};
+	//
+	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
 	
 	// 描画初期化処理　ここまで
-	
+
 	//ゲームループ
 	while (true)
 	{
@@ -231,7 +238,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		// DirectX毎フレーム処理　ここから
-		
+
 		// バックバッファの番号を取得(2つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 		// 1.リソースバリアで書き込み可能に変更
@@ -246,22 +253,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 		rtvHandle.ptr += bbIndex * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
-		
+
 		// 3.画面クリア			R	  G		B	A
 		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
 		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
 		// 4.描画コマンドここから
-		
+
 		// 4.描画コマンドここまで
-		
+
 		// 5.リソースバリアを戻す
 		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
 		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			//表示状態へ
 		commandList->ResourceBarrier(1, &barrierDesc);
-		
+
 		// コマンドのフラッシュ
-		
+
 		// 命令のクローズ
 		result = commandList->Close();
 		assert(SUCCEEDED(result));
