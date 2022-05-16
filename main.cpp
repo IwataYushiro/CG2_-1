@@ -246,6 +246,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
 		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
 	};
+	//アフィン変換実装
+	XMFLOAT3 affin2D[] = {
+		{1.0f,0.0f,0.0f},
+		{0.0f,1.0f,0.0f},
+		{0.0f,0.0f,1.0f}
+	};
+
+	//計算
+	for (int i = 0; i < _countof(vertices); i++)
+	{
+		vertices[i].x = affin2D[0].x * vertices[i].x + affin2D[0].y * vertices[i].y + affin2D[0].z * vertices[i].z;
+		vertices[i].y = affin2D[1].x * vertices[i].x + affin2D[1].y * vertices[i].y + affin2D[1].z * vertices[i].z;
+		vertices[i].z = affin2D[2].x * vertices[i].x + affin2D[2].y * vertices[i].y + affin2D[2].z * vertices[i].z;
+	}
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
 
@@ -409,13 +423,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ID3D12PipelineState* pipelineState = nullptr;
 	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
+
 	
-	//アフィン変換実装
-	XMFLOAT3 affin2D[] = {
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,0.0f},
-		{0.0f,0.0f,1.0f}
-	};
 	// 描画初期化処理　ここまで
 
 	//ゲームループ
@@ -438,6 +447,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//全キーの入力状態を取得する
 		BYTE key[256] = {};
 		keyboard->GetDeviceState(sizeof(key), key);
+
+
+		if (key[DIK_W])
+		{
+			affin2D[1].z += 2.0f;
+		}
+		if (key[DIK_S])
+		{
+			affin2D[1].z -= 2.0f;
+		}
+
+		if (key[DIK_D])
+		{
+			affin2D[0].z += 2.0f;
+		}
+		if (key[DIK_A])
+		{
+			affin2D[0].z -= 2.0f;
+		}
 
 		// バックバッファの番号を取得(2つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
