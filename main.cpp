@@ -2,12 +2,14 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <cassert>
+#include <dinput.h>
+#include <math.h>
 #include <vector>
 #include <string>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 #define DIRECTINPUT_VERSION			0x0800	//DirectInputのバージョン指定
-#include <dinput.h>
+#define PI							3.141592f
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -246,20 +248,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
 		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
 	};
+	float transformX = 0.0f;
+	float transformY = 0.0f;
+	float rotation = 0.0f;
+	float scale =1.0f;
+
 	//アフィン変換実装
-	XMFLOAT3 affin2D[] = {
+	float affin2D[3][3] = {
 		{1.0f,0.0f,0.0f},
 		{0.0f,1.0f,0.0f},
 		{0.0f,0.0f,1.0f}
 	};
 
-	//計算
-	for (int i = 0; i < _countof(vertices); i++)
-	{
-		vertices[i].x = affin2D[0].x * vertices[i].x + affin2D[0].y * vertices[i].y + affin2D[0].z * vertices[i].z;
-		vertices[i].y = affin2D[1].x * vertices[i].x + affin2D[1].y * vertices[i].y + affin2D[1].z * vertices[i].z;
-		vertices[i].z = affin2D[2].x * vertices[i].x + affin2D[2].y * vertices[i].y + affin2D[2].z * vertices[i].z;
-	}
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
 
@@ -290,11 +290,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	XMFLOAT3* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
-	//全頂点に対して
-	for (int i = 0; i < _countof(vertices); i++)
-	{
-		vertMap[i] = vertices[i];		//座標をコピー
-	}
+	
 	//繋がりを解除
 	vertBuff->Unmap(0, nullptr);
 
@@ -448,23 +444,69 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		BYTE key[256] = {};
 		keyboard->GetDeviceState(sizeof(key), key);
 
+		transformX = 0.0f;
+		transformY = 0.0f;
+		rotation = 0.0f;
+		scale = 1.0f;
 
+		//キー操作
+		//平行移動
 		if (key[DIK_W])
 		{
-			affin2D[1].z += 2.0f;
+			transformY += 0.05f;
 		}
 		if (key[DIK_S])
 		{
-			affin2D[1].z -= 2.0f;
+			transformY -= 0.05f;
 		}
 
 		if (key[DIK_D])
 		{
-			affin2D[0].z += 2.0f;
+			transformX += 0.05f;
 		}
 		if (key[DIK_A])
 		{
-			affin2D[0].z -= 2.0f;
+			transformX -= 0.05f;
+		}
+		//拡大
+		if (key[DIK_Z])
+		{
+			scale -= 0.05f;
+		}
+		if (key[DIK_X])
+		{
+			scale += 0.05f;
+		}
+		//回転
+		if (key[DIK_C])
+		{
+			rotation += PI/90;
+		}
+
+		//アフィン行列を作成
+		affin2D[0][0] = scale * cos(rotation);
+		affin2D[0][1] = scale * (-sin(rotation));
+		affin2D[0][2] = transformX;
+		
+		affin2D[1][0] = scale * sin(rotation);
+		affin2D[1][1] = scale * cos(rotation);
+		affin2D[1][2] = transformY;
+
+		affin2D[2][0] = 0.0f;
+		affin2D[2][1] = 0.0f;
+		affin2D[2][2] = 1.0f;
+
+		//計算
+		for (int i = 0; i < _countof(vertices); i++)
+		{
+			vertices[i].x = affin2D[0][0]* vertices[i].x + affin2D[0][1] * vertices[i].y + affin2D[0][2] * 1.0f;
+			vertices[i].y = affin2D[1][0]* vertices[i].x + affin2D[1][1] * vertices[i].y + affin2D[1][2] * 1.0f;
+			vertices[i].z = affin2D[2][0]* vertices[i].x + affin2D[2][1] * vertices[i].y + affin2D[2][2] * 1.0f;
+		}
+		//全頂点に対して
+		for (int i = 0; i < _countof(vertices); i++)
+		{
+			vertMap[i] = vertices[i];		//座標をコピー
 		}
 
 		// バックバッファの番号を取得(2つなので0番か1番)
