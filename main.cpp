@@ -38,6 +38,7 @@ LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+#pragma region Windows初期化
 	//ウィンドゥサイズ
 	const int window_width = 1280; //横幅
 	const int window_height = 720; //縦幅
@@ -73,8 +74,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ShowWindow(hwnd, SW_SHOW);
 
 	MSG msg{}; //メッセージ
-
+#pragma endregion
 	// DirectX初期化処理　ここから
+#pragma region デバッグレイヤ
 #ifdef _DEBUG
 //デバッグレイヤーをオンに
 	ID3D12Debug* debugController;
@@ -82,7 +84,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		debugController->EnableDebugLayer();
 	}
 #endif
+#pragma endregion
 
+#pragma region DirectX初期化
 	HRESULT result;
 	ID3D12Device* device = nullptr;
 	IDXGIFactory7* dxgiFactory = nullptr;
@@ -92,6 +96,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	ID3D12CommandQueue* commandQueue = nullptr;
 	ID3D12DescriptorHeap* rtvHeap = nullptr;
 
+#pragma region アダプタの列挙
 	//DXGIファクトリーの生成
 	result = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 	assert(SUCCEEDED(result));
@@ -111,6 +116,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//動的配列に追加
 		adapters.push_back(tmpAdapter);
 	}
+#pragma endregion
+
+#pragma region アダプタの選別
 	//妥当なアダプタを選別
 	for (size_t i = 0; i < adapters.size(); i++)
 	{
@@ -126,7 +134,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+#pragma endregion
 
+#pragma region デバイスの生成
 	// 対応レベルの配列
 	D3D_FEATURE_LEVEL levels[] =
 	{
@@ -149,7 +159,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			break;
 		}
 	}
+#pragma endregion
 
+#pragma region コマンドリストの生成
 	// コマンドアロケータを生成
 	result = device->CreateCommandAllocator(
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -162,13 +174,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		cmdAllocator, nullptr,
 		IID_PPV_ARGS(&commandList));
 	assert(SUCCEEDED(result));
+#pragma endregion
 
+#pragma region コマンドキューの生成
 	//コマンドキューの設定
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
 	//コマンドキューを生成
 	result = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
 	assert(SUCCEEDED(result));
+#pragma endregion
 
+#pragma region スワップチェーンの生成
 	// スワップチェーンの設定
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	swapChainDesc.Width = 1280;
@@ -184,7 +200,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandQueue, hwnd, &swapChainDesc, nullptr, nullptr,
 		(IDXGISwapChain1**)&swapChain);
 	assert(SUCCEEDED(result));
+#pragma endregion
 
+#pragma region レンダビューターゲット
 	// デスクリプタヒープの設定
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー
@@ -213,12 +231,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		device->CreateRenderTargetView(backBuffers[i], &rtvDesc, rtvHandle);
 	}
 
+#pragma endregion
+
+#pragma region フェンス生成
 	// フェンスの生成
 	ID3D12Fence* fence = nullptr;
 	UINT64 fenceVal = 0;
 
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+#pragma endregion
 
+#pragma	region DirectInputの初期化
 	//DirectInputの初期化
 	IDirectInput8* directInput = nullptr;
 	result = DirectInput8Create(
@@ -239,10 +262,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = keyboard->SetCooperativeLevel(
 		hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(result));
-
+#pragma endregion
+#pragma endregion
 	// DirectX初期化処理　ここまで
 
 	// 描画初期化処理　ここから
+#pragma region 描画初期化処理
 	XMFLOAT3 vertices[] = {
 		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
 		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
@@ -303,6 +328,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// 頂点1つ分のデータサイズ
 	vdView.StrideInBytes = sizeof(XMFLOAT3);
 
+#pragma region 頂点シェーダー
 	ID3DBlob* vsBlob = nullptr;		//頂点シェーダーオブジェクト
 	ID3DBlob* psBlob = nullptr;		//ピクセルシェーダーオブジェクト
 	ID3DBlob* errorBlob = nullptr;	//エラーオブジェクト
@@ -332,7 +358,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		OutputDebugStringA(error.c_str());
 		assert(0);
 	}
+#pragma endregion
 
+#pragma region ピクセルシェーダー
 	//ピクセルシェーダーの読み込みとコンパイル
 	result = D3DCompileFromFile(
 		L"BasicPS.hlsl",								//シェーダーファイル名
@@ -357,7 +385,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		OutputDebugStringA(error.c_str());
 		assert(0);
 	}
+#pragma endregion
 
+#pragma region 頂点レイアウト
 	//頂点レイアウト
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
 		{
@@ -371,6 +401,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		},//(1行で書いた方が見やすい)
 		//座標以外に色、テクスチャUV等を渡す場合はさらに続ける
 	};
+#pragma endregion
+
+#pragma region グラフィックスパイプライン設定
 	//グラフィックスパイプライン設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc{};
 	//シェーダーの設定
@@ -414,13 +447,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	rootSigBlob->Release();
 	// パイプラインにルートシグネチャをセット
 	pipelineDesc.pRootSignature = rootSignature;
+#pragma endregion
 
+#pragma region パイプラインステートの生成
 	//パイプラインステートの生成
 	ID3D12PipelineState* pipelineState = nullptr;
 	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
-
-	
+#pragma endregion
+#pragma region キーボード入力設定
+	BYTE preKeys[256];
+	BYTE keys[256] = {};
+#pragma endregion
+#pragma endregion
 	// 描画初期化処理　ここまで
 
 	//ゲームループ
@@ -438,77 +477,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		// DirectX毎フレーム処理　ここから
-		//キーボード情報の取得開始
-		keyboard->Acquire();
-		//全キーの入力状態を取得する
-		BYTE key[256] = {};
-		keyboard->GetDeviceState(sizeof(key), key);
-
-		transformX = 0.0f;
-		transformY = 0.0f;
-		rotation = 0.0f;
-		scale = 1.0f;
-
-		//キー操作
-		//平行移動
-		if (key[DIK_W])
-		{
-			transformY += 0.05f;
-		}
-		if (key[DIK_S])
-		{
-			transformY -= 0.05f;
-		}
-
-		if (key[DIK_D])
-		{
-			transformX += 0.05f;
-		}
-		if (key[DIK_A])
-		{
-			transformX -= 0.05f;
-		}
-		//拡大
-		if (key[DIK_Z])
-		{
-			scale -= 0.05f;
-		}
-		if (key[DIK_X])
-		{
-			scale += 0.05f;
-		}
-		//回転
-		if (key[DIK_C])
-		{
-			rotation += PI/90;
-		}
-
-		//アフィン行列を作成
-		affin2D[0][0] = scale * cos(rotation);
-		affin2D[0][1] = scale * (-sin(rotation));
-		affin2D[0][2] = transformX;
 		
-		affin2D[1][0] = scale * sin(rotation);
-		affin2D[1][1] = scale * cos(rotation);
-		affin2D[1][2] = transformY;
-
-		affin2D[2][0] = 0.0f;
-		affin2D[2][1] = 0.0f;
-		affin2D[2][2] = 1.0f;
-
-		//計算
-		for (int i = 0; i < _countof(vertices); i++)
-		{
-			vertices[i].x = affin2D[0][0]* vertices[i].x + affin2D[0][1] * vertices[i].y + affin2D[0][2] * 1.0f;
-			vertices[i].y = affin2D[1][0]* vertices[i].x + affin2D[1][1] * vertices[i].y + affin2D[1][2] * 1.0f;
-			vertices[i].z = affin2D[2][0]* vertices[i].x + affin2D[2][1] * vertices[i].y + affin2D[2][2] * 1.0f;
-		}
-		//全頂点に対して
-		for (int i = 0; i < _countof(vertices); i++)
-		{
-			vertMap[i] = vertices[i];		//座標をコピー
-		}
-
 		// バックバッファの番号を取得(2つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 		// 1.リソースバリアで書き込み可能に変更
@@ -525,16 +494,80 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 3.画面クリア			R	  G		B	A
-		if (key[DIK_SPACE])
-		{
-			FLOAT clearColor[] = { 1.0f,0.5f,0.5f,0.0f };
-			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		}
-		else
-		{
+		
 			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
 			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		}
+		
+			//キーボード情報の取得開始
+			keyboard->Acquire();
+			//全キーの入力状態を取得する
+			
+			keyboard->GetDeviceState(sizeof(keys), keys);
+
+			transformX = 0.0f;
+			transformY = 0.0f;
+			rotation = 0.0f;
+			scale = 1.0f;
+
+			//キー操作
+			//平行移動
+			if (keys[DIK_W])
+			{
+				transformY += 0.05f;
+			}
+			if (keys[DIK_S])
+			{
+				transformY -= 0.05f;
+			}
+
+			if (keys[DIK_D])
+			{
+				transformX += 0.05f;
+			}
+			if (keys[DIK_A])
+			{
+				transformX -= 0.05f;
+			}
+			//拡大
+			if (keys[DIK_Z])
+			{
+				scale -= 0.05f;
+			}
+			if (keys[DIK_X])
+			{
+				scale += 0.05f;
+			}
+			//回転
+			if (keys[DIK_C])
+			{
+				rotation += PI / 90;
+			}
+
+			//アフィン行列を作成
+			affin2D[0][0] = scale * cos(rotation);
+			affin2D[0][1] = scale * (-sin(rotation));
+			affin2D[0][2] = transformX;
+
+			affin2D[1][0] = scale * sin(rotation);
+			affin2D[1][1] = scale * cos(rotation);
+			affin2D[1][2] = transformY;
+
+			affin2D[2][0] = 0.0f;
+			affin2D[2][1] = 0.0f;
+			affin2D[2][2] = 1.0f;
+
+			//計算
+			for (int i = 0; i < _countof(vertices); i++)
+			{
+				vertices[i].x = affin2D[0][0] * vertices[i].x + affin2D[0][1] * vertices[i].y + affin2D[0][2] * 1.0f;
+				vertices[i].y = affin2D[1][0] * vertices[i].x + affin2D[1][1] * vertices[i].y + affin2D[1][2] * 1.0f;
+				vertices[i].z = affin2D[2][0] * vertices[i].x + affin2D[2][1] * vertices[i].y + affin2D[2][2] * 1.0f;
+			}
+			//全頂点に対して
+			for (int i = 0; i < _countof(vertices); i++)
+			{
+				vertMap[i] = vertices[i];		//座標をコピー
+			}
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
