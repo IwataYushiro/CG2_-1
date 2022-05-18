@@ -620,11 +620,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	descriptorRange.BaseShaderRegister = 0;							//テクスチャレジスタ0番
 	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	//ルートパラメータの設定
-	D3D12_ROOT_PARAMETER rootParam = {};
-	rootParam.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//定数バッファビュー
-	rootParam.Descriptor.ShaderRegister = 0;						//定数バッファ番号
-	rootParam.Descriptor.RegisterSpace = 0;							//デフォルト値
-	rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;		//全てのシェーダから見える
+	D3D12_ROOT_PARAMETER rootParam[2] = {};
+	//定数バッファ0番
+	rootParam[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//定数バッファビュー(種類)
+	rootParam[0].Descriptor.ShaderRegister = 0;						//定数バッファ番号
+	rootParam[0].Descriptor.RegisterSpace = 0;							//デフォルト値
+	rootParam[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;		//全てのシェーダから見える
+	//テクスチャレジスタ0番
+	rootParam[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;	//種類
+	rootParam[1].DescriptorTable.pDescriptorRanges = &descriptorRange;			//デスクリプタレンジ
+	rootParam[1].DescriptorTable.NumDescriptorRanges = 1;						//デスクリプタレンジ数
+	rootParam[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;				//全てのシェーダから見える
 	//ルートシグネチャ
 	ID3D12RootSignature* rootSignature;
 	// ルートシグネチャの設定
