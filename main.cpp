@@ -404,6 +404,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		scratchImg = std::move(mipChain);
 		metadata = scratchImg.GetMetadata();
 	}
+	//読み込んだディフューズテクスチャをSRGBとして扱う
+	metadata.format = MakeSRGB(metadata.format);
 	//テクスチャバッファ設定
 	// ヒープ設定
 	D3D12_HEAP_PROPERTIES textureHeapProp{};
