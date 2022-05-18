@@ -274,33 +274,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
-	XMFLOAT3 vertices[] = {
-		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下	インデックス0
-		{-0.5f,+0.5f,0.0f},//左上	Xが+で右　Yが+で上	インデックス1
-		{+0.5f,-0.5f,0.0f},//右下						インデックス2
-		{+0.5f,+0.5f,0.0f},//右上						インデックス3
+	struct Vertex
+	{
+		XMFLOAT3 pos;		//xyz座標
+		XMFLOAT2 uv;		//uv座標
+	};
+	//頂点データ
+	Vertex vertices[] = {
+		// x	 y	  z		 u	  v
+		{{-0.4f,-0.7f,0.0f},{0.0f,1.0f}},//左下	Xが-で左　Yが-で下
+		{{-0.4f,+0.7f,0.0f},{0.0f,0.0f}},//左上	Xが+で右　Yが+で上
+		{{+0.4f,-0.7f,0.0f},{1.0f,1.0f}},//右下					
+		{{+0.4f,+0.7f,0.0f},{1.0f,0.0f}},//右上					
 	};
 	//インデックスデータ
-	uint16_t indices[] =
+	unsigned short indices[] =
 	{
 		0,1,2,//三角形1つ目
 		1,2,3,//三角形2つ目
 	};
 
-	float transformX = 0.0f;
-	float transformY = 0.0f;
-	float rotation = 0.0f;
-	float scale =1.0f;
-
-	//アフィン変換実装
-	float affin2D[3][3] = {
-		{1.0f,0.0f,0.0f},
-		{0.0f,1.0f,0.0f},
-		{0.0f,0.0f,1.0f}
-	};
-
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
-	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
+	UINT sizeVB = static_cast<UINT>(sizeof(vertices[0]) * _countof(vertices));
 
 	//頂点バッファの設定
 	D3D12_HEAP_PROPERTIES heapProp{};		//ヒープ設定
@@ -369,7 +364,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	cbResourseDesc.MipLevels = 1;
 	cbResourseDesc.SampleDesc.Count = 1;
 	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	
+
 	ID3D12Resource* constBuffMaterial = nullptr;
 	//定数バッファの生成
 	result = device->CreateCommittedResource(
@@ -389,10 +384,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
-	XMFLOAT3* vertMap = nullptr;
+	Vertex* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
-	
+
 	//繋がりを解除
 	vertBuff->Unmap(0, nullptr);
 
@@ -403,7 +398,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// 頂点バッファのサイズ
 	vdView.SizeInBytes = sizeVB;
 	// 頂点1つ分のデータサイズ
-	vdView.StrideInBytes = sizeof(XMFLOAT3);
+	vdView.StrideInBytes = sizeof(vertices[0]);
 
 	//インデックスバッファビューの作成
 	D3D12_INDEX_BUFFER_VIEW idView{};
@@ -504,7 +499,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ブレンドステートの設定
 	//pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask
 	//	= D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
-	
+
 	//レンダーターゲットのブレンド設定
 	D3D12_RENDER_TARGET_BLEND_DESC& blenddesc = pipelineDesc.BlendState.RenderTarget[0];
 	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
@@ -582,7 +577,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		// DirectX毎フレーム処理　ここから
-		
+
 		// バックバッファの番号を取得(2つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 		// 1.リソースバリアで書き込み可能に変更
@@ -599,80 +594,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 3.画面クリア			R	  G		B	A
-		
-			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		
-			//キーボード情報の取得開始
-			keyboard->Acquire();
-			//全キーの入力状態を取得する
-			
-			keyboard->GetDeviceState(sizeof(keys), keys);
 
-			transformX = 0.0f;
-			transformY = 0.0f;
-			rotation = 0.0f;
-			scale = 1.0f;
+		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
+		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 
-			//キー操作
-			//平行移動
-			if (keys[DIK_W])
-			{
-				transformY += 0.05f;
-			}
-			if (keys[DIK_S])
-			{
-				transformY -= 0.05f;
-			}
+		//キーボード情報の取得開始
+		keyboard->Acquire();
+		//全キーの入力状態を取得する
 
-			if (keys[DIK_D])
-			{
-				transformX += 0.05f;
-			}
-			if (keys[DIK_A])
-			{
-				transformX -= 0.05f;
-			}
-			//拡大
-			if (keys[DIK_Z])
-			{
-				scale -= 0.05f;
-			}
-			if (keys[DIK_X])
-			{
-				scale += 0.05f;
-			}
-			//回転
-			if (keys[DIK_C])
-			{
-				rotation += PI / 90;
-			}
+		keyboard->GetDeviceState(sizeof(keys), keys);
 
-			//アフィン行列を作成
-			affin2D[0][0] = scale * cos(rotation);
-			affin2D[0][1] = scale * (-sin(rotation));
-			affin2D[0][2] = transformX;
-
-			affin2D[1][0] = scale * sin(rotation);
-			affin2D[1][1] = scale * cos(rotation);
-			affin2D[1][2] = transformY;
-
-			affin2D[2][0] = 0.0f;
-			affin2D[2][1] = 0.0f;
-			affin2D[2][2] = 1.0f;
-
-			//計算
-			for (int i = 0; i < _countof(vertices); i++)
-			{
-				vertices[i].x = affin2D[0][0] * vertices[i].x + affin2D[0][1] * vertices[i].y + affin2D[0][2] * 1.0f;
-				vertices[i].y = affin2D[1][0] * vertices[i].x + affin2D[1][1] * vertices[i].y + affin2D[1][2] * 1.0f;
-				vertices[i].z = affin2D[2][0] * vertices[i].x + affin2D[2][1] * vertices[i].y + affin2D[2][2] * 1.0f;
-			}
-			//全頂点に対して
-			for (int i = 0; i < _countof(vertices); i++)
-			{
-				vertMap[i] = vertices[i];		//座標をコピー
-			}
+		//全頂点に対して
+		for (int i = 0; i < _countof(vertices); i++)
+		{
+			vertMap[i] = vertices[i];		//座標をコピー
+		}
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
