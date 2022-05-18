@@ -8,6 +8,8 @@
 #include <string>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
+#include <DirectXTex.h>
+
 #define DIRECTINPUT_VERSION			0x0800	//DirectInputのバージョン指定
 #define PI							3.141592f
 
