@@ -276,11 +276,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma region 描画初期化処理
 	XMFLOAT3 vertices[] = {
 		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
-		{+0.5f,-0.5f,0.0f},//右下	Xが-で左　Yが+で上
-		{-0.5f, 0.0f,0.0f},//左中	Xが+で右　Yが0で中
+		{+0.5f,-0.3f,0.0f},//右下	Xが-で左　Yが+で上
+		{-0.4f, 0.0f,0.0f},//左中	Xが+で右　Yが0で中
 		{+0.5f, 0.0f,0.0f},//右中
-		{-0.5f,+0.5f,0.0f},//左上
-		{+0.5f,+0.5f,0.0f},//右上
+		{-0.2f,+0.1f,0.0f},//左上
+		{+0.5f,-0.5f,0.0f},//右上
 	};
 	float transformX = 0.0f;
 	float transformY = 0.0f;
