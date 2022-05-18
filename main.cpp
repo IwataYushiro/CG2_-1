@@ -703,6 +703,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	//リストかストリップか
 		// 頂点バッファビューの設定コマンド
 		commandList->IASetVertexBuffers(0, 1, &vdView);
+		// インデックスバッファビューの設定コマンド
+		commandList->IASetIndexBuffer(&idView);
 		//定数バッファビュー(CBV)の設定コマンド
 		commandList->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
 		//描画コマンド
