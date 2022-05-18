@@ -280,6 +280,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{+0.5f,-0.5f,0.0f},//右下						インデックス2
 		{+0.5f,+0.5f,0.0f},//右上						インデックス3
 	};
+	//インデックスデータ
+	uint16_t indices[] =
+	{
+		0,1,2,//三角形1つ目
+		1,2,3,//三角形2つ目
+	};
+
 	float transformX = 0.0f;
 	float transformY = 0.0f;
 	float rotation = 0.0f;
