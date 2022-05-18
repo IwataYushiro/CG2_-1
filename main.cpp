@@ -434,6 +434,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		sizeof(XMFLOAT4) * textureWidth,	//1ラインサイズ
 		sizeof(XMFLOAT4) * imageDataCount	//全ラインサイズ
 	);
+	//SRVの最大個数
+	const size_t kMaxSRVCount = 2056;
+
+	//デスクリプタヒープ設定
+	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
+	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;//シェーダーから見えるように
+	srvHeapDesc.NumDescriptors = kMaxSRVCount;
+
+	//設定をもとにSRV用デスクリプタヒープを生成
+	ID3D12DescriptorHeap* srvheap = nullptr;
+	result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvheap));
+	assert(SUCCEEDED(result));
+
+	//SRVヒープの戦闘ハンドルを取得
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvheap->GetCPUDescriptorHandleForHeapStart();
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	Vertex* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
