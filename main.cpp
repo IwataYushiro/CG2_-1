@@ -385,22 +385,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
-	//横方向ピクセル数
-	const size_t textureWidth = 256;
-	//縦方向ピクセル数
-	const size_t textureHeight = 256;
-	// 配列の要素数
-	const size_t imageDataCount = textureWidth * textureHeight;
-	// 画像イメージデータ配列
-	XMFLOAT4* imageData = new XMFLOAT4[imageDataCount]; //必ず後で開放する
+	TexMetadata metadata{};
+	ScratchImage scratchImg{};
+	//WICテクスチャのロード
+	result = LoadFromWICFile(
+		L"Resources/texture.png",	//Resourcesフォルダのtexture.png
+		WIC_FLAGS_NONE,
+		&metadata, scratchImg);
+	assert(SUCCEEDED(result));
 
-	//全ピクセルの色を初期化
-	for (size_t i = 0; i < imageDataCount; i++)
+	ScratchImage mipChain{};
+	//ミップマップ生成
+	result = GenerateMipMaps(
+		scratchImg.GetImages(), scratchImg.GetImageCount(), scratchImg.GetMetadata(),
+		TEX_FILTER_DEFAULT, 0, mipChain);
+	if (SUCCEEDED(result))
 	{
-		imageData[i].x = 1.0f;		//R
-		imageData[i].y = 0.0f;		//G
-		imageData[i].z = 0.0f;		//B
-		imageData[i].w = 1.0f;		//A
+		scratchImg = std::move(mipChain);
+		metadata = scratchImg.GetMetadata();
 	}
 	//テクスチャバッファ設定
 	// ヒープ設定
