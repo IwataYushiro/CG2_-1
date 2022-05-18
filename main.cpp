@@ -278,6 +278,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
 		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
 		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
+		{+0.5f,-0.5f,0.0f},//右下
+		{-0.5f,+0.5f,0.0f},//左上
+		{+0.5f,+0.5f,0.0f},//右上
 	};
 	float transformX = 0.0f;
 	float transformY = 0.0f;
@@ -346,7 +349,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = constBuffMaterial->Map(0, nullptr, (void**)&constMapMaterial);//マッピング
 	assert(SUCCEEDED(result));
 	//値を書き込むと自動的に転送される
-	constMapMaterial->color = XMFLOAT4(1, 0, 0, 0.5f);
+	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	XMFLOAT3* vertMap = nullptr;
