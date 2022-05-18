@@ -421,6 +421,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ブレンドステートの設定
 	//pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask
 	//	= D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
+	
 	//レンダーターゲットのブレンド設定
 	D3D12_RENDER_TARGET_BLEND_DESC& blenddesc = pipelineDesc.BlendState.RenderTarget[0];
 	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
@@ -429,10 +430,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	blenddesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;	//加算
 	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;		//ソースの値を100％使う
 	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;	//テストの値を0％使う
-	//減算合成
-	blenddesc.BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;//テストからソースを減算
-	blenddesc.SrcBlend = D3D12_BLEND_ONE;			//ソースの値を100％使う
-	blenddesc.DestBlend = D3D12_BLEND_ONE;			//テストの値を100％使う
+	//色反転
+	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;			//加算
+	blenddesc.SrcBlend = D3D12_BLEND_INV_DEST_COLOR;//1.0f-テストカラーの値
+	blenddesc.DestBlend = D3D12_BLEND_ZERO;			//使わない
 	//頂点レイアウトの設定
 	pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
 	pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
@@ -507,7 +508,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		// 3.画面クリア			R	  G		B	A
 		
-			FLOAT clearColor[] = { 1.0f,1.0f,1.0f,0.0f }; //青っぽい色
+			FLOAT clearColor[] = { 1.0f,0.0f,0.0f,0.0f }; //青っぽい色
 			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 		
 			//キーボード情報の取得開始
