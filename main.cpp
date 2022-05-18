@@ -35,6 +35,12 @@ LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	//標準のメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+//定数バッファ用データ構造体(マテリアル)
+struct ConstBufferDataMaterial
+{
+	XMFLOAT4 color;	//色(RGBA)
+
+};
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
