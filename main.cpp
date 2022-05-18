@@ -429,14 +429,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//テクスチャバッファにデータ転送
 	result = texbuff->WriteToSubresource(
 		0,
-		nullptr,						//全領域へコピー
-		imageData,						//元データアドレス
+		nullptr,							//全領域へコピー
+		imageData,							//元データアドレス
 		sizeof(XMFLOAT4) * textureWidth,	//1ラインサイズ
 		sizeof(XMFLOAT4) * imageDataCount	//全ラインサイズ
 	);
 	//SRVの最大個数
 	const size_t kMaxSRVCount = 2056;
-
+	
 	//デスクリプタヒープ設定
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -450,6 +450,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//SRVヒープの戦闘ハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvheap->GetCPUDescriptorHandleForHeapStart();
+	//シェーダーリソースビュー設定
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};				//設定構造体
+	srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;		//RGBA float 
+	srvDesc.Shader4ComponentMapping =
+		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;	//2Dテクスチャ
+	srvDesc.Texture2D.MipLevels = 1;
+
+	//ハンドルの指す位置にシェーダーリソースビュー作成
+	device->CreateShaderResourceView(texbuff, &srvDesc, srvHandle);
+
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	Vertex* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
