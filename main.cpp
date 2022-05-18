@@ -276,15 +276,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma region 描画初期化処理
 	XMFLOAT3 vertices[] = {
 		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下	インデックス0
-		{-0.5f,+0.5f,0.0f},//左上	Xが+で右　Yが+で上	インデックス1
-		{+0.5f,-0.5f,0.0f},//右下						インデックス2
-		{+0.5f,+0.5f,0.0f},//右上						インデックス3
+		{-0.5f, 0.0f,0.0f},//左中	Xが+で右　Yが+で上	インデックス1
+		{-0.5f,+0.5f,0.0f},//左上						インデックス2
+		{+0.5f,-0.5f,0.0f},//右下						インデックス3
+		{+0.5f, 0.0f,0.0f},//右中						インデックス4
+		{+0.5f,+0.5f,0.0f},//右上						インデックス5
 	};
 	//インデックスデータ
 	uint16_t indices[] =
 	{
-		0,1,2,//三角形1つ目
-		1,2,3,//三角形2つ目
+		0,3,//線1つ目
+		0,4,//線2つ目
+		1,3,//線3つ目
+		1,4,//線4つ目
+		1,5,//線5つ目
+		2,4,//線6つ目
+		2,5,//線7つ目
 	};
 
 	float transformX = 0.0f;
@@ -700,7 +707,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->SetGraphicsRootSignature(rootSignature);
 
 		//プリミティブ形状の設定コマンド
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	//リストかストリップか
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_LINELIST);	//リストかストリップか
 		// 頂点バッファビューの設定コマンド
 		commandList->IASetVertexBuffers(0, 1, &vdView);
 		// インデックスバッファビューの設定コマンド
