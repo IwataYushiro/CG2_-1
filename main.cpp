@@ -405,6 +405,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// 頂点1つ分のデータサイズ
 	vdView.StrideInBytes = sizeof(XMFLOAT3);
 
+	//インデックスバッファビューの作成
+	D3D12_INDEX_BUFFER_VIEW idView{};
+	idView.BufferLocation = indexBuff->GetGPUVirtualAddress();
+	idView.Format = DXGI_FORMAT_R16_UINT;
+	idView.SizeInBytes = sizeIB;
+
 #pragma region 頂点シェーダー
 	ID3DBlob* vsBlob = nullptr;		//頂点シェーダーオブジェクト
 	ID3DBlob* psBlob = nullptr;		//ピクセルシェーダーオブジェクト
