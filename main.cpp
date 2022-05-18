@@ -430,10 +430,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	blenddesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;	//加算
 	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;		//ソースの値を100％使う
 	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;	//テストの値を0％使う
-	//半透明合成(アルファブレンディング)
+	//半透明合成(アルファブレンディング　デフォルト)
 	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;			//加算
 	blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;		//ソースのアルファ値
 	blenddesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;//1.0f-ソースのアルファ値
+
 	//頂点レイアウトの設定
 	pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
 	pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
@@ -508,7 +509,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		// 3.画面クリア			R	  G		B	A
 		
-			FLOAT clearColor[] = { 0.0f,0.0f,1.0f,0.0f }; //青っぽい色
+			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
 			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 		
 			//キーボード情報の取得開始
