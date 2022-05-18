@@ -346,6 +346,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		IID_PPV_ARGS(&indexBuff));
 	assert(SUCCEEDED(result));
 
+	//インデックスバッファをマッピング
+	uint16_t* indexMap = nullptr;
+	result = indexBuff->Map(0, nullptr, (void**)&indexMap);
+	assert(SUCCEEDED(result));
+	//全インデックスに対して
+	for (int i = 0; i < _countof(indices); i++)
+	{
+		indexMap[i] = indices[i];
+	}
+	//マッピング解除
+	indexBuff->Unmap(0, nullptr);
 	//定数バッファの設定
 	D3D12_HEAP_PROPERTIES cbHeapProp{};		//ヒープ設定
 	cbHeapProp.Type = D3D12_HEAP_TYPE_UPLOAD; //GPUへの転送用
