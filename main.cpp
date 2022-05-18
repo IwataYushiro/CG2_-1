@@ -416,12 +416,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//リソース設定
 	D3D12_RESOURCE_DESC textureResourceDesc{};
 	textureResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	textureResourceDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	textureResourceDesc.Width = textureWidth;		//幅
-	textureResourceDesc.Height = textureHeight;		//高さ
-	textureResourceDesc.DepthOrArraySize = 1;
-	textureResourceDesc.MipLevels = 1;
+	textureResourceDesc.Format = metadata.format;
+	textureResourceDesc.Width = metadata.width;							//幅
+	textureResourceDesc.Height = (UINT16)metadata.height;				//高さ
+	textureResourceDesc.DepthOrArraySize = (UINT16)metadata.arraySize;
+	textureResourceDesc.MipLevels = (UINT16)metadata.mipLevels;
 	textureResourceDesc.SampleDesc.Count = 1;
+
 	//テクスチャバッファの生成
 	ID3D12Resource* texbuff = nullptr;
 	result = device->CreateCommittedResource(
