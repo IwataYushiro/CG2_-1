@@ -433,14 +433,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		nullptr,
 		IID_PPV_ARGS(&texbuff));
 	assert(SUCCEEDED(result));
-	//テクスチャバッファにデータ転送
-	result = texbuff->WriteToSubresource(
-		0,
-		nullptr,							//全領域へコピー
-		imageData,							//元データアドレス
-		sizeof(XMFLOAT4) * textureWidth,	//1ラインサイズ
-		sizeof(XMFLOAT4) * imageDataCount	//全ラインサイズ
-	);
+
+	//全ミップマップについて
+	for (size_t i = 0; i < metadata.mipLevels; i++)
+	{
+		//ミップマップレベルを指定してイメージを取得
+		const Image* img = scratchImg.GetImage(i, 0, 0);
+		//テクスチャバッファにデータ転送
+		result = texbuff->WriteToSubresource(
+			(UINT)i,
+			nullptr,							//全領域へコピー
+			img->pixels,						//元データアドレス
+			(UINT)img->rowPitch,				//1ラインサイズ
+			(UINT)img->slicePitch				//1枚サイズ
+		);
+		assert(SUCCEEDED(result));
+	}
 	//SRVの最大個数
 	const size_t kMaxSRVCount = 2056;
 	
@@ -817,8 +825,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// DirectX毎フレーム処理　ここまで
 
 	}
-	//元データ解放
-	delete[] imageData;
+	
 	//ウィンドゥクラスを登録解除
 	UnregisterClass(w.lpszClassName, w.hInstance);
 	//コンソールへの文字出力
