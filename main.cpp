@@ -426,6 +426,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		nullptr,
 		IID_PPV_ARGS(&texbuff));
 	assert(SUCCEEDED(result));
+	//テクスチャバッファにデータ転送
+	result = texbuff->WriteToSubresource(
+		0,
+		nullptr,						//全領域へコピー
+		imageData,						//元データアドレス
+		sizeof(XMFLOAT4) * textureWidth,	//1ラインサイズ
+		sizeof(XMFLOAT4) * imageDataCount	//全ラインサイズ
+	);
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	Vertex* vertMap = nullptr;
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
@@ -741,7 +749,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// DirectX毎フレーム処理　ここまで
 
 	}
-
+	//元データ解放
+	delete[] imageData;
 	//ウィンドゥクラスを登録解除
 	UnregisterClass(w.lpszClassName, w.hInstance);
 	//コンソールへの文字出力
