@@ -468,6 +468,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma region 頂点レイアウト
 	//頂点レイアウト
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+		//xyz座標(1行で書いた方が見やすい)
 		{
 			"POSITION",										//セマンティック名
 			0,												//同じセマンティック名が複数あるときに使うインデックス(0でいい)
@@ -476,8 +477,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			D3D12_APPEND_ALIGNED_ELEMENT,					//データのオフセット値(D3D12_APPEND_ALIGNED_ELEMENTだと自動設定)
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,		//入力データ種別(標準はD3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA)
 			0												//一度に描画するインスタンス数(0でいい)
-		},//(1行で書いた方が見やすい)
-		//座標以外に色、テクスチャUV等を渡す場合はさらに続ける
+		},//座標以外に色、テクスチャUV等を渡す場合はさらに続ける
+		//uv座標(1行で書いた方が見やすい)
+		{
+			"TEXCOORD",
+			0,
+			DXGI_FORMAT_R32G32_FLOAT,						//uvはfloatが二つなのでフォーマットはRGだけ
+			0,
+			D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+			0
+		}
+
+
 	};
 #pragma endregion
 
