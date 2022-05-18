@@ -419,8 +419,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ポリゴン内塗りつぶし
 	pipelineDesc.RasterizerState.DepthClipEnable = true;			//深度クリッピングを有効に
 	//ブレンドステートの設定
-	pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask
-		= D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
+	//pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask
+	//	= D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
+
+	D3D12_RENDER_TARGET_BLEND_DESC& blenddesc = pipelineDesc.BlendState.RenderTarget[0];
+	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
+	
 	//頂点レイアウトの設定
 	pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
 	pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
