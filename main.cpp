@@ -429,10 +429,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	blenddesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;	//加算
 	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;		//ソースの値を100％使う
 	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;	//テストの値を0％使う
-	//加算合成
-	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;
-	blenddesc.SrcBlend = D3D12_BLEND_ONE;
-	blenddesc.DestBlend = D3D12_BLEND_ONE;
+	//減算合成
+	blenddesc.BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;//テストからソースを減算
+	blenddesc.SrcBlend = D3D12_BLEND_ONE;			//ソースの値を100％使う
+	blenddesc.DestBlend = D3D12_BLEND_ONE;			//テストの値を100％使う
 	//頂点レイアウトの設定
 	pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
 	pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
@@ -507,7 +507,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		// 3.画面クリア			R	  G		B	A
 		
-			FLOAT clearColor[] = { 0.0f,0.0f,1.0f,0.0f }; //青っぽい色
+			FLOAT clearColor[] = { 1.0f,1.0f,1.0f,0.0f }; //青っぽい色
 			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 		
 			//キーボード情報の取得開始
