@@ -444,12 +444,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	srvHeapDesc.NumDescriptors = kMaxSRVCount;
 
 	//設定をもとにSRV用デスクリプタヒープを生成
-	ID3D12DescriptorHeap* srvheap = nullptr;
-	result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvheap));
+	ID3D12DescriptorHeap* srvHeap = nullptr;
+	result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
 	assert(SUCCEEDED(result));
 
 	//SRVヒープの戦闘ハンドルを取得
-	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvheap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
 	//シェーダーリソースビュー設定
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};				//設定構造体
 	srvDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;		//RGBA float 
@@ -745,6 +745,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->IASetIndexBuffer(&idView);
 		//定数バッファビュー(CBV)の設定コマンド
 		commandList->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
+		//SRVヒープの設定コマンド
+		commandList->SetDescriptorHeaps(1, &srvHeap);
+		// SRVヒープの先頭ハンドルを取得(SRVを指しているはず)
+		D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
+		// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
+		commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 		//描画コマンド
 		//commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
 		//インデックスバッファを使う場合
