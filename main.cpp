@@ -276,9 +276,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma region 描画初期化処理
 	XMFLOAT3 vertices[] = {
 		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
-		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
-		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
-		{+0.5f,-0.5f,0.0f},//右下
+		{+0.5f,-0.5f,0.0f},//右下	Xが-で左　Yが+で上
+		{-0.5f, 0.0f,0.0f},//左中	Xが+で右　Yが0で中
+		{+0.5f, 0.0f,0.0f},//右中
 		{-0.5f,+0.5f,0.0f},//左上
 		{+0.5f,+0.5f,0.0f},//右上
 	};
@@ -657,7 +657,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->SetGraphicsRootSignature(rootSignature);
 
 		//プリミティブ形状の設定コマンド
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);	//三角形ストリップ
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);	//リストかストリップか
 		// 頂点バッファビューの設定コマンド
 		commandList->IASetVertexBuffers(0, 1, &vdView);
 		//定数バッファビュー(CBV)の設定コマンド
