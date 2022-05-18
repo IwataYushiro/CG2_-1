@@ -306,7 +306,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	resDesc.MipLevels = 1;
 	resDesc.SampleDesc.Count = 1;
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	//頂点バッファの設定
+	//頂点バッファの生成
 	ID3D12Resource* vertBuff = nullptr;
 	result = device->CreateCommittedResource(
 		&heapProp,//ヒープ設定
@@ -323,21 +323,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//リソース設定
 	D3D12_RESOURCE_DESC cbResourseDesc{};
 	cbResourseDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	cbResourseDesc.Width = sizeVB;//頂点データ全体のサイズ
+	cbResourseDesc.Width = (sizeof(ConstBufferDataMaterial) + 0xff) & ~0xff;//256バイトアラインメント
 	cbResourseDesc.Height = 1;
 	cbResourseDesc.DepthOrArraySize = 1;
 	cbResourseDesc.MipLevels = 1;
 	cbResourseDesc.SampleDesc.Count = 1;
 	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	//頂点バッファの設定
-	ID3D12Resource* vertBuff = nullptr;
+	
+	ID3D12Resource* constBuffMaterial = nullptr;
+	//定数バッファの生成
 	result = device->CreateCommittedResource(
 		&cbHeapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
 		&cbResourseDesc, //リソース設定
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&vertBuff));
+		IID_PPV_ARGS(&constBuffMaterial));
 	assert(SUCCEEDED(result));
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
