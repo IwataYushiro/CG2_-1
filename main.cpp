@@ -279,18 +279,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
 		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
 	};
-	float transformX = 0.0f;
-	float transformY = 0.0f;
-	float rotation = 0.0f;
-	float scale =1.0f;
-
-	//アフィン変換実装
-	float affin2D[3][3] = {
-		{1.0f,0.0f,0.0f},
-		{0.0f,1.0f,0.0f},
-		{0.0f,0.0f,1.0f}
-	};
-
+	
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
 
@@ -346,7 +335,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = constBuffMaterial->Map(0, nullptr, (void**)&constMapMaterial);//マッピング
 	assert(SUCCEEDED(result));
 	//値を書き込むと自動的に転送される
-	constMapMaterial->color = XMFLOAT4(1, 0, 0, 0.5f);
+	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	XMFLOAT3* vertMap = nullptr;
@@ -563,65 +552,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 			
 			keyboard->GetDeviceState(sizeof(keys), keys);
 
-			transformX = 0.0f;
-			transformY = 0.0f;
-			rotation = 0.0f;
-			scale = 1.0f;
-
-			//キー操作
-			//平行移動
-			if (keys[DIK_W])
-			{
-				transformY += 0.05f;
-			}
-			if (keys[DIK_S])
-			{
-				transformY -= 0.05f;
-			}
-
-			if (keys[DIK_D])
-			{
-				transformX += 0.05f;
-			}
-			if (keys[DIK_A])
-			{
-				transformX -= 0.05f;
-			}
-			//拡大
-			if (keys[DIK_Z])
-			{
-				scale -= 0.05f;
-			}
-			if (keys[DIK_X])
-			{
-				scale += 0.05f;
-			}
-			//回転
-			if (keys[DIK_C])
-			{
-				rotation += PI / 90;
-			}
-
-			//アフィン行列を作成
-			affin2D[0][0] = scale * cos(rotation);
-			affin2D[0][1] = scale * (-sin(rotation));
-			affin2D[0][2] = transformX;
-
-			affin2D[1][0] = scale * sin(rotation);
-			affin2D[1][1] = scale * cos(rotation);
-			affin2D[1][2] = transformY;
-
-			affin2D[2][0] = 0.0f;
-			affin2D[2][1] = 0.0f;
-			affin2D[2][2] = 1.0f;
-
-			//計算
-			for (int i = 0; i < _countof(vertices); i++)
-			{
-				vertices[i].x = affin2D[0][0] * vertices[i].x + affin2D[0][1] * vertices[i].y + affin2D[0][2] * 1.0f;
-				vertices[i].y = affin2D[1][0] * vertices[i].x + affin2D[1][1] * vertices[i].y + affin2D[1][2] * 1.0f;
-				vertices[i].z = affin2D[2][0] * vertices[i].x + affin2D[2][1] * vertices[i].y + affin2D[2][2] * 1.0f;
-			}
 			//全頂点に対して
 			for (int i = 0; i < _countof(vertices); i++)
 			{
