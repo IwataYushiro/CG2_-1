@@ -5,11 +5,13 @@
 #include <DirectXMath.h>
 #include <wrl.h>
 
-class Objects
+using namespace DirectX;
+
+class Mesh
 {
 public: // ƒƒ“ƒoŠÖ”
-	Objects();
-	~Objects();
+	Mesh();
+	~Mesh();
 	/// <summary>
 	/// ‰Šú‰»
 	/// </summary>
@@ -26,13 +28,6 @@ public: // ƒƒ“ƒoŠÖ”
 	void Draw();
 
 private://ƒƒ“ƒo•Ï”
-	HRESULT result;
-	ID3D12Device* device;
-	IDXGIFactory7* dxgiFactory;
-	IDXGISwapChain4* swapChain;
-	ID3D12CommandAllocator* cmdAllocator;
-	ID3D12GraphicsCommandList* commandList;
-	ID3D12CommandQueue* commandQueue;
-	ID3D12DescriptorHeap* rtvHeap;
+	XMFLOAT3 vertices[];
 };
 
