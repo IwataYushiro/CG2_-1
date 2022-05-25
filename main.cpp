@@ -8,9 +8,10 @@
 #include <string>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
-#include "objects.h"
 #define DIRECTINPUT_VERSION			0x0800	//DirectInputのバージョン指定
 #define PI							3.141592f
+
+#include "Objects.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
