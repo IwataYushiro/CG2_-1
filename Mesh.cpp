@@ -4,13 +4,14 @@
 
 Mesh::Mesh()
 {
+
 }
 
 Mesh::~Mesh()
 {
 }
 
-void Mesh::Initialize()
+void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 {
 	XMFLOAT3 vertices_[][3] = {
 		{
@@ -179,7 +180,7 @@ void Mesh::Update()
 
 }
 
-void Mesh::Draw()
+void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 {
 	
 	// 頂点バッファビューの設定コマンド

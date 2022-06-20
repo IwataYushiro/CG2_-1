@@ -271,6 +271,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	// •`‰æ‰Šú‰»ˆ—@‚±‚±‚©‚ç
 #pragma region •`‰æ‰Šú‰»ˆ—
+	Mesh* mesh = new Mesh();
+
 	XMFLOAT3 vertices[] = {
 		{-0.5f,-0.5f,0.0f},//¶‰º	X‚ª-‚Å¶@Y‚ª-‚Å‰º
 		{-0.5f,+0.5f,0.0f},//¶ã	X‚ª-‚Å¶@Y‚ª+‚Åã
