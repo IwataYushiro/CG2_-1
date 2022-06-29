@@ -22,7 +22,7 @@ public: // メンバ関数
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(HRESULT result,ID3D12Device* device);
+	void Initialize(HRESULT result, ID3D12Device* device);
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -35,11 +35,20 @@ public: // メンバ関数
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
 private://メンバ変数
-	
+
 	XMFLOAT3 vertices_;
 	ID3D12Resource* constBuffMaterial = nullptr;
+
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};
 
+	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
+	XMFLOAT3* vertMap = nullptr;
+	
+	//ルートシグネチャ
+	ID3D12RootSignature* rootSignature;
+
+	//パイプラインステートの生成
+	ID3D12PipelineState* pipelineState = nullptr;
 };
 
