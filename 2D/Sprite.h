@@ -15,11 +15,11 @@ struct ConstBufferDataMaterial
 	XMFLOAT4 color;	//色(RGBA)
 
 };
-class Mesh
+class Sprite
 {
 public: // メンバ関数
-	Mesh();
-	~Mesh();
+	Sprite();
+	~Sprite();
 	/// <summary>
 	/// 初期化
 	/// </summary>
@@ -36,11 +36,26 @@ public: // メンバ関数
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
 private://メンバ変数
+	struct Vertex
+	{
+		XMFLOAT3 pos;		//xyz座標
+		XMFLOAT2 uv;		//uv座標
+	};
 
-	XMFLOAT3 vertices_[3] = {
-		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
-		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
-		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
+	//頂点データ
+	Vertex vertices_[4] = {
+		// x	 y	  z		 u	  v
+		{{-0.5f,-0.7f,0.0f},{0.0f,1.0f}},//左下	Xが-で左　Yが-で下
+		{{-0.5f,+0.7f,0.0f},{0.0f,0.0f}},//左上	Xが+で右　Yが+で上
+		{{+0.5f,-0.7f,0.0f},{1.0f,1.0f}},//右下					
+		{{+0.5f,+0.7f,0.0f},{1.0f,0.0f}},//右上					
+	};
+	
+	//インデックスデータ
+	unsigned short indices[6] =
+	{
+		0,1,2,//三角形1つ目
+		1,2,3,//三角形2つ目
 	};
 
 	ID3D12Resource* constBuffMaterial = nullptr;
@@ -49,7 +64,10 @@ private://メンバ変数
 	D3D12_VERTEX_BUFFER_VIEW vdView{};
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
-	XMFLOAT3* vertMap = nullptr;
+	Vertex* vertMap = nullptr;
+
+	//インデックスバッファビューの作成
+	D3D12_INDEX_BUFFER_VIEW idView{};
 
 	//ルートシグネチャ
 	ID3D12RootSignature* rootSignature;
