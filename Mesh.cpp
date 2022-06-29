@@ -13,14 +13,7 @@ Mesh::~Mesh()
 
 void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 {
-	XMFLOAT3 vertices_[]= {
-		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
-		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
-		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
-		{-0.7f,-0.6f,0.0f},//左下	Xが-で左　Yが-で下
-		{-0.6f,-0.7f,0.0f},//左上	Xが-で左　Yが+で上
-		{-0.7f,-0.6f,0.0f},//右下	Xが+で右　Yが-で下
-	};
+	
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices_));
 
@@ -166,6 +159,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 		//座標以外に色、テクスチャUV等を渡す場合はさらに続ける
 	};
 #pragma endregion
+
 #pragma region グラフィックスパイプライン設定
 	//グラフィックスパイプライン設定
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC pipelineDesc{};
@@ -248,20 +242,13 @@ void Mesh::Update()
 
 void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 {
-	XMFLOAT3 vertices_[] = {
-		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
-		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
-		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
-		{-0.7f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
-		{-0.6f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
-		{-0.7f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
-	};
 	
 	//全頂点に対して
 	for (int i = 0; i < _countof(vertices_); i++)
 	{
 		vertMap[i] = vertices_[i];		//座標をコピー
 	}
+
 	//パイプラインステートとルートシグネチャの設定コマンド
 	commandList->SetPipelineState(pipelineState);
 	commandList->SetGraphicsRootSignature(rootSignature);

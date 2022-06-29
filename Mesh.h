@@ -36,7 +36,12 @@ public: // メンバ関数
 
 private://メンバ変数
 
-	XMFLOAT3 vertices_;
+	XMFLOAT3 vertices_[3] = {
+		{-0.5f,-0.5f,0.0f},//左下	Xが-で左　Yが-で下
+		{-0.5f,+0.5f,0.0f},//左上	Xが-で左　Yが+で上
+		{+0.5f,-0.5f,0.0f},//右下	Xが+で右　Yが-で下
+	};
+
 	ID3D12Resource* constBuffMaterial = nullptr;
 
 	//頂点バッファビューの作成
