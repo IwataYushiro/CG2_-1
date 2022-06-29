@@ -8,12 +8,11 @@
 #include <string>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
-#include <DirectXTex.h>
+#define DIRECTINPUT_VERSION			0x0800	//DirectInputのバージョン指定
+
+const float PI = 3.141592f;					//const floatでいい
 
 #include "2D/Sprite.h"
-
-#define DIRECTINPUT_VERSION			0x0800	//DirectInputのバージョン指定
-#define PI							3.141592f
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -39,12 +38,6 @@ LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	//標準のメッセージ処理を行う
 	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
-//定数バッファ用データ構造体(マテリアル)
-struct ConstBufferDataMaterial
-{
-	XMFLOAT4 color;	//色(RGBA)
-
-};
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -278,13 +271,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// DirectX初期化処理　ここまで
 
 	// 描画初期化処理　ここから
+#pragma region 描画初期化処理
 	Sprite* sprite = new Sprite();
+
 	sprite->Initialize(result, device);
 
 #pragma region キーボード入力設定
 	BYTE preKeys[256];
 	BYTE keys[256] = {};
 #pragma endregion
+
 #pragma endregion
 	// 描画初期化処理　ここまで
 
@@ -303,7 +299,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		// DirectX毎フレーム処理　ここから
-
+		
 		// バックバッファの番号を取得(2つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 		// 1.リソースバリアで書き込み可能に変更
@@ -320,17 +316,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 3.画面クリア			R	  G		B	A
-
-		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
-		//キーボード情報の取得開始
-		keyboard->Acquire();
-		//全キーの入力状態を取得する
-
-		keyboard->GetDeviceState(sizeof(keys), keys);
-
 		
+			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
+			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+		
+			//キーボード情報の取得開始
+			keyboard->Acquire();
+			//全キーの入力状態を取得する
+			
+			keyboard->GetDeviceState(sizeof(keys), keys);
+
+			
+
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
 		D3D12_VIEWPORT viewport{};
@@ -392,7 +389,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// DirectX毎フレーム処理　ここまで
 
 	}
-	
+
 	//ウィンドゥクラスを登録解除
 	UnregisterClass(w.lpszClassName, w.hInstance);
 	//コンソールへの文字出力

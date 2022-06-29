@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Windows.h>
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <cassert>
@@ -63,11 +62,14 @@ private://メンバ変数
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};
 
-	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
-	Vertex* vertMap = nullptr;
-
 	//インデックスバッファビューの作成
 	D3D12_INDEX_BUFFER_VIEW idView{};
+
+	//設定をもとにSRV用デスクリプタヒープを生成
+	ID3D12DescriptorHeap* srvHeap = nullptr;
+
+	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
+	Vertex* vertMap = nullptr;
 
 	//ルートシグネチャ
 	ID3D12RootSignature* rootSignature;

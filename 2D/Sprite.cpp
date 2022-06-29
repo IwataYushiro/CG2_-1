@@ -87,7 +87,6 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	cbResourseDesc.SampleDesc.Count = 1;
 	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
-	ID3D12Resource* constBuffMaterial = nullptr;
 	//定数バッファの生成
 	result = device->CreateCommittedResource(
 		&cbHeapProp,//ヒープ設定
@@ -179,7 +178,6 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	srvHeapDesc.NumDescriptors = kMaxSRVCount;
 
 	//設定をもとにSRV用デスクリプタヒープを生成
-	ID3D12DescriptorHeap* srvHeap = nullptr;
 	result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
 	assert(SUCCEEDED(result));
 
@@ -196,8 +194,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	//ハンドルの指す位置にシェーダーリソースビュー作成
 	device->CreateShaderResourceView(texbuff, &srvDesc, srvHandle);
 
-	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
-	Vertex* vertMap = nullptr;
+	
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
 
@@ -399,8 +396,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 #pragma endregion
 
 #pragma region パイプラインステートの生成
-	//パイプラインステートの生成
-	ID3D12PipelineState* pipelineState = nullptr;
+	
 	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
 #pragma endregion
@@ -413,7 +409,6 @@ void Sprite::Update()
 
 void Sprite::Draw(ID3D12GraphicsCommandList* commandList)
 {
-
 	//全頂点に対して
 	for (int i = 0; i < _countof(vertices_); i++)
 	{
