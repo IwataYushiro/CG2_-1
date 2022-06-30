@@ -69,6 +69,7 @@ private://メンバ変数
 		0,1,2,//三角形1つ目
 		1,2,3,//三角形2つ目
 	};
+	
 	//定数バッファのGPUリソースのポインタ
 	ID3D12Resource* constBuffMaterial = nullptr;
 	ID3D12Resource* constBuffTransform = nullptr;

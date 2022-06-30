@@ -87,14 +87,9 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	
 	//値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	
 	//単位行列を代入
-	constMapTransform->mat = XMMatrixIdentity();
-
-	constMapTransform->mat.r[0].m128_f32[0] = 2.0f / windowWidth;
-	constMapTransform->mat.r[1].m128_f32[1] = -2.0f / windowHeight;
-	//ここで画面半分平行移動
-	constMapTransform->mat.r[3].m128_f32[0] = -1.0f;
-	constMapTransform->mat.r[3].m128_f32[1] = 1.0f;
+	constMapTransform->mat = XMMatrixOrthographicOffCenterLH(0, windowWidth, windowHeight, 0, 0, 1);
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
