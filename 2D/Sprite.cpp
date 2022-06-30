@@ -111,34 +111,13 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 
-	//ワールド変換行列
+	//ワールド変換行列(値の初期化)
 	matWorld = XMMatrixIdentity();
 	scale = { 1.0f,1.0f,1.0f };
 	rotation = { 0.0f,0.0f,0.0f };
 	position = { 0.0f,0.0f,0.0f };
 
-	//スケーリング行列
-	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
-	//スケーリングを反映
-	matWorld *= matScale;
-
-	//回転行列
-	matRot = XMMatrixIdentity();
-	//Z軸回転
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(0.0f)); //Z軸周りに0度回転してから
-	//X軸回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(15.0f)); //X軸周りに15度回転してから
-	//Y軸回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(30.0f)); //Y軸周りに30度回転
-	//回転を反映
-	matWorld *= matRot;
-
-	//平行移動行列
-	matTrans = XMMatrixTranslation(-50.0f, 0.0f, 0.0f);
-
-	//平行移動を反映
-	matWorld *= matTrans;
-
+	
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
 	//WICテクスチャのロード
@@ -498,31 +477,30 @@ void Sprite::Update(BYTE* keys)
 		if (keys[DIK_RIGHT]) { position.x += 1.0f; }
 		else if (keys[DIK_LEFT]) { position.x -= 1.0f; }
 	}
-	//ワールド変換行列
-	matWorld = XMMatrixIdentity();
-
 	//スケーリング行列
-	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
-	//スケーリングを反映
-	matWorld *= matScale;
+	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
 
 	//回転行列
 	matRot = XMMatrixIdentity();
 	//Z軸回転
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(0.0f)); //Z軸周りに0度回転してから
+	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z)); //Z軸周りに0度回転してから
 	//X軸回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(15.0f)); //X軸周りに15度回転してから
+	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x)); //X軸周りに15度回転してから
 	//Y軸回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(30.0f)); //Y軸周りに30度回転
-
-	//回転を反映
-	matWorld *= matRot;
+	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y)); //Y軸周りに30度回転
 
 	//平行移動行列
 	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
-	//平行移動を反映
-	matWorld *= matTrans;
 
+
+	//ワールド変換行列
+	matWorld = XMMatrixIdentity();
+	//ワールド行列にスケーリング行列を反映
+	matWorld *= matScale;
+	//回転行列を反映
+	matWorld *= matRot;
+	//平行移動行列を反映
+	matWorld *= matTrans;
 	//定数バッファに転送
 	constMapTransform->mat = matWorld * matview * matprojection;
 
