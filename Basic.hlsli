@@ -5,7 +5,7 @@ cbuffer ConstBufferDataMaterial:register(b0)
 };
 
 //3D•ÏŠ·s—ñ
-cbuffer ConstBufferDataTransform:register(b0)
+cbuffer ConstBufferDataTransform:register(b1)
 {
 	matrix mat;//3D•ÏŠ·s—ñ
 };

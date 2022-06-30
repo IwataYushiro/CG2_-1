@@ -14,6 +14,11 @@ struct ConstBufferDataMaterial
 	XMFLOAT4 color;	//色(RGBA)
 
 };
+struct ConstBufferDataTransform
+{
+	XMMATRIX mat; // 3D変換行列
+
+};
 class Sprite
 {
 public: // メンバ関数
@@ -23,6 +28,9 @@ public: // メンバ関数
 	/// 初期化
 	/// </summary>
 	void Initialize(HRESULT result, ID3D12Device* device);
+
+	template<typename T1, typename T2>
+	void CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buffer, T2*& cbm);
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -56,8 +64,17 @@ private://メンバ変数
 		0,1,2,//三角形1つ目
 		1,2,3,//三角形2つ目
 	};
-
+	//定数バッファのGPUリソースのポインタ
 	ID3D12Resource* constBuffMaterial = nullptr;
+	ID3D12Resource* constBuffTransform = nullptr;
+	
+	//構造体を変数化
+	ConstBufferDataMaterial* cbdm = nullptr;
+	ConstBufferDataTransform* cbdt = nullptr;
+
+	//マッピング用のポインタ
+	ConstBufferDataMaterial* constMapMaterial = nullptr;
+	ConstBufferDataTransform* constMapTransform = nullptr;
 
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};

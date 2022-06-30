@@ -455,7 +455,9 @@ void Sprite::Draw(ID3D12GraphicsCommandList* commandList)
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
-	//
+	//定数バッファビュー(CBV)の設定コマンド
+	commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform->GetGPUVirtualAddress());
+
 	//描画コマンド
 	//commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
 	//インデックスバッファを使う場合
