@@ -92,6 +92,9 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	constMapTransform->mat.r[0].m128_f32[0] = 2.0f / windowWidth;
 	constMapTransform->mat.r[1].m128_f32[1] = -2.0f / windowHeight;
+	//‚±‚±‚Å‰æ–Ê”¼•ª•½sˆÚ“®
+	constMapTransform->mat.r[3].m128_f32[0] = -1.0f;
+	constMapTransform->mat.r[3].m128_f32[1] = 1.0f;
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
