@@ -99,9 +99,16 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 		0.1f, 1000.0f
 	);
 
+	//ビュー変換行列
+	XMMATRIX matview;
+	XMFLOAT3 eye(0.0f, 0.0f, -100.0f);
+	XMFLOAT3 target(0.0f, 0.0f, 0.0f);
+	XMFLOAT3 up(0.0f, 1.0f, 0.0f);
+
+	matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 
 	//定数バッファに転送
-	constMapTransform->mat = matprojection;
+	constMapTransform->mat = matview * matprojection;
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
