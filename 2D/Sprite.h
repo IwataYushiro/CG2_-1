@@ -99,10 +99,18 @@ private://メンバ変数
 	XMMATRIX matWorld;
 	//スケーリング行列
 	XMMATRIX matScale;
+	//スケーリング倍率
+	XMFLOAT3 scale;
+	 
 	//回転行列
 	XMMATRIX matRot;
+	//回転角
+	XMFLOAT3 rotation;
+	
 	//平行移動行列
 	XMMATRIX matTrans;
+	//座標
+	XMFLOAT3 position;
 
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};

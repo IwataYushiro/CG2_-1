@@ -113,6 +113,9 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	//ワールド変換行列
 	matWorld = XMMatrixIdentity();
+	scale = { 1.0f,1.0f,1.0f };
+	rotation = { 0.0f,0.0f,0.0f };
+	position = { 0.0f,0.0f,0.0f };
 
 	//スケーリング行列
 	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
@@ -472,7 +475,7 @@ void Sprite::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& bu
 }
 void Sprite::Update(BYTE* keys)
 {
-
+	//視点を操作
 	if (keys[DIK_D] || keys[DIK_A])
 	{
 		if (keys[DIK_D]) { angle += XMConvertToRadians(1.0f); }
@@ -483,7 +486,12 @@ void Sprite::Update(BYTE* keys)
 
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
+	//平行移動
+	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT || keys[DIK_LEFT]) {
 
+		//ワールド変換行列
+		matWorld = XMMatrixIdentity();
+	}
 	//定数バッファに転送
 	constMapTransform->mat = matWorld * matview * matprojection;
 
