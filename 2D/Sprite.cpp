@@ -90,6 +90,9 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	//単位行列を代入
 	constMapTransform->mat = XMMatrixIdentity();
 
+	constMapTransform->mat.r[0].m128_f32[0] = 2.0f / windowWidth;
+	constMapTransform->mat.r[1].m128_f32[1] = -2.0f / windowHeight;
+
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
 	//WICテクスチャのロード
@@ -97,6 +100,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 		L"Resources/texture.png",	//Resourcesフォルダのtexture.png
 		WIC_FLAGS_NONE,
 		&metadata, scratchImg);
+
 	assert(SUCCEEDED(result));
 
 	ScratchImage mipChain{};

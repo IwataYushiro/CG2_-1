@@ -43,6 +43,11 @@ public: // メンバ関数
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
 private://メンバ変数
+	
+	//ウィンドゥサイズ
+	const int windowWidth = 1280; //横幅
+	const int windowHeight = 720; //縦幅
+
 	struct Vertex
 	{
 		XMFLOAT3 pos;		//xyz座標
@@ -52,10 +57,10 @@ private://メンバ変数
 	//頂点データ
 	Vertex vertices_[4] = {
 		// x	 y	  z		 u	  v
-		{{-0.5f,-0.7f,0.0f},{0.0f,1.0f}},//左下	Xが-で左　Yが-で下
-		{{-0.5f,+0.7f,0.0f},{0.0f,0.0f}},//左上	Xが+で右　Yが+で上
-		{{+0.5f,-0.7f,0.0f},{1.0f,1.0f}},//右下					
-		{{+0.5f,+0.7f,0.0f},{1.0f,0.0f}},//右上					
+		{{0.0f  ,100.0f,0.0f},{0.0f,1.0f}},//左下	Xが-で左　Yが-で下
+		{{0.0f  ,0.0f  ,0.0f},{0.0f,0.0f}},//左上	Xが+で右　Yが+で上
+		{{100.0f,100.0f,0.0f},{1.0f,1.0f}},//右下					
+		{{100.0f,0.0f  ,0.0f},{1.0f,0.0f}},//右上					
 	};
 	
 	//インデックスデータ
