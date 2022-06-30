@@ -101,7 +101,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	//ÉrÉÖÅ[ïœä∑çsóÒ
 	XMMATRIX matview;
-	XMFLOAT3 eye(0.0f, 0.0f, -100.0f);
+	XMFLOAT3 eye(50.0f, 50.0f, -100.0f);
 	XMFLOAT3 target(0.0f, 0.0f, 0.0f);
 	XMFLOAT3 up(0.0f, 1.0f, 0.0f);
 
