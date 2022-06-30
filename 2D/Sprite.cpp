@@ -15,7 +15,7 @@ Sprite::~Sprite()
 void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 {
 #pragma region 描画初期化処理
-	
+
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(vertices_[0]) * _countof(vertices_));
 
@@ -31,6 +31,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.MipLevels = 1;
 	resDesc.SampleDesc.Count = 1;
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
 	//頂点バッファの生成
 	ID3D12Resource* vertBuff = nullptr;
 	result = device->CreateCommittedResource(
@@ -52,6 +53,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.MipLevels = 1;
 	resDesc.SampleDesc.Count = 1;
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
 	//インデックスバッファの生成
 	ID3D12Resource* indexBuff = nullptr;
 	result = device->CreateCommittedResource(
@@ -74,35 +76,19 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	}
 	//マッピング解除
 	indexBuff->Unmap(0, nullptr);
+
+
 	//定数バッファの設定
-	D3D12_HEAP_PROPERTIES cbHeapProp{};		//ヒープ設定
-	cbHeapProp.Type = D3D12_HEAP_TYPE_UPLOAD; //GPUへの転送用
-	//リソース設定
-	D3D12_RESOURCE_DESC cbResourseDesc{};
-	cbResourseDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	cbResourseDesc.Width = (sizeof(ConstBufferDataMaterial) + 0xff) & ~0xff;//256バイトアラインメント
-	cbResourseDesc.Height = 1;
-	cbResourseDesc.DepthOrArraySize = 1;
-	cbResourseDesc.MipLevels = 1;
-	cbResourseDesc.SampleDesc.Count = 1;
-	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+	CreateConstBuffer<ConstBufferDataMaterial, ConstBufferDataMaterial>
+		(cbdm, device, constBuffMaterial, constMapMaterial);
 
-	//定数バッファの生成
-	result = device->CreateCommittedResource(
-		&cbHeapProp,//ヒープ設定
-		D3D12_HEAP_FLAG_NONE,
-		&cbResourseDesc, //リソース設定
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&constBuffMaterial));
-	assert(SUCCEEDED(result));
-
-	//定数バッファのマッピング
-	ConstBufferDataMaterial* constMapMaterial = nullptr;
-	result = constBuffMaterial->Map(0, nullptr, (void**)&constMapMaterial);//マッピング
-	assert(SUCCEEDED(result));
+	CreateConstBuffer<ConstBufferDataTransform, ConstBufferDataTransform>
+		(cbdt, device, constBuffTransform, constMapTransform);
+	
 	//値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	//単位行列を代入
+	constMapTransform->mat = XMMatrixIdentity();
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
@@ -194,7 +180,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	//ハンドルの指す位置にシェーダーリソースビュー作成
 	device->CreateShaderResourceView(texbuff, &srvDesc, srvHandle);
 
-	
+
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
 
@@ -202,7 +188,6 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	vertBuff->Unmap(0, nullptr);
 
 	//頂点バッファビューの作成
-	D3D12_VERTEX_BUFFER_VIEW vdView{};
 	// GPU仮想アドレス
 	vdView.BufferLocation = vertBuff->GetGPUVirtualAddress();
 	// 頂点バッファのサイズ
@@ -210,6 +195,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	// 頂点1つ分のデータサイズ
 	vdView.StrideInBytes = sizeof(vertices_[0]);
 
+	//インデックスバッファビューの作成
 	idView.BufferLocation = indexBuff->GetGPUVirtualAddress();
 	idView.Format = DXGI_FORMAT_R16_UINT;
 	idView.SizeInBytes = sizeIB;
@@ -350,7 +336,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	descriptorRange.BaseShaderRegister = 0;							//テクスチャレジスタ0番
 	descriptorRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
 	//ルートパラメータの設定
-	D3D12_ROOT_PARAMETER rootParams[2] = {};
+	D3D12_ROOT_PARAMETER rootParams[3] = {};
 	//定数バッファ0番
 	rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//定数バッファビュー(種類)
 	rootParams[0].Descriptor.ShaderRegister = 0;						//定数バッファ番号
@@ -361,6 +347,11 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	rootParams[1].DescriptorTable.pDescriptorRanges = &descriptorRange;			//デスクリプタレンジ
 	rootParams[1].DescriptorTable.NumDescriptorRanges = 1;						//デスクリプタレンジ数
 	rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;				//全てのシェーダから見える
+	//定数バッファ1番
+	rootParams[2].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;		//定数バッファビュー(種類)
+	rootParams[2].Descriptor.ShaderRegister = 1;						//定数バッファ番号
+	rootParams[2].Descriptor.RegisterSpace = 0;							//デフォルト値
+	rootParams[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;		//全てのシェーダから見える
 
 	//テクスチャサンプラーの設定
 	D3D12_STATIC_SAMPLER_DESC samplerDesc{};
@@ -396,12 +387,43 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 #pragma endregion
 
 #pragma region パイプラインステートの生成
-	
+
 	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
 #pragma endregion
 }
 
+template<typename T1, typename T2>
+void Sprite::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buffer, T2*& cbm) {
+
+	HRESULT result;
+
+	D3D12_HEAP_PROPERTIES cbHeapProp{};		//ヒープ設定
+	cbHeapProp.Type = D3D12_HEAP_TYPE_UPLOAD; //GPUへの転送用
+	//リソース設定
+	D3D12_RESOURCE_DESC cbResourseDesc{};
+	cbResourseDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	cbResourseDesc.Width = (sizeof(cb) + 0xff) & ~0xff;//256バイトアラインメント
+	cbResourseDesc.Height = 1;
+	cbResourseDesc.DepthOrArraySize = 1;
+	cbResourseDesc.MipLevels = 1;
+	cbResourseDesc.SampleDesc.Count = 1;
+	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+	//定数バッファの生成
+	result = device->CreateCommittedResource(
+		&cbHeapProp,//ヒープ設定
+		D3D12_HEAP_FLAG_NONE,
+		&cbResourseDesc, //リソース設定
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&buffer));
+	assert(SUCCEEDED(result));
+
+
+	result = buffer->Map(0, nullptr, (void**)&cbm);//マッピング
+	assert(SUCCEEDED(result));
+}
 void Sprite::Update()
 {
 
@@ -433,6 +455,7 @@ void Sprite::Draw(ID3D12GraphicsCommandList* commandList)
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
+	//
 	//描画コマンド
 	//commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
 	//インデックスバッファを使う場合
