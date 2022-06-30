@@ -113,9 +113,12 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	//ワールド変換行列
 	matWorld = XMMatrixIdentity();
+
 	//スケーリング行列
 	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
+	//スケーリングを反映
 	matWorld *= matScale;
+	
 	//回転行列
 	matRot = XMMatrixIdentity();
 	//Z軸回転
@@ -126,7 +129,11 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	matRot *= XMMatrixRotationY(XMConvertToRadians(30.0f)); //Y軸周りに30度回転
 	//回転を反映
 	matWorld *= matRot;
+
 	//平行移動行列
+	matTrans = XMMatrixTranslation(-50.0f, 0.0f, 0.0f);
+	//平行移動を反映
+	matWorld *= matTrans;
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
