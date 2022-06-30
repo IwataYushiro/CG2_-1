@@ -93,11 +93,15 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	//constMapTransform->mat = XMMatrixOrthographicOffCenterLH(0, windowWidth, windowHeight, 0, 0, 1);
 	
 	//“§Ž‹“Š‰e•ÏŠ·s—ñ‚ÌŒvŽZ
-	constMapTransform->mat = XMMatrixPerspectiveFovLH(
+	XMMATRIX matprojection = XMMatrixPerspectiveFovLH(
 		XMConvertToRadians(45.0f),
 		(float)windowWidth / windowHeight,
 		0.1f, 1000.0f
 	);
+
+
+	//’è”ƒoƒbƒtƒ@‚É“]‘—
+	constMapTransform->mat = matprojection;
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
