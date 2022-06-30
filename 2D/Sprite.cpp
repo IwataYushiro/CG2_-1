@@ -117,13 +117,15 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
 	matWorld *= matScale;
 	//‰ñ“]s—ñ
-	
-	//X²‰ñ“]
-	
-	//Y²‰ñ“]
-	
+	matRot = XMMatrixIdentity();
 	//Z²‰ñ“]
-	
+	matRot *= XMMatrixRotationZ(XMConvertToRadians(0.0f)); //Z²ü‚è‚É0“x‰ñ“]‚µ‚Ä‚©‚ç
+	//X²‰ñ“]
+	matRot *= XMMatrixRotationX(XMConvertToRadians(15.0f)); //X²ü‚è‚É15“x‰ñ“]‚µ‚Ä‚©‚ç
+	//Y²‰ñ“]
+	matRot *= XMMatrixRotationY(XMConvertToRadians(30.0f)); //Y²ü‚è‚É30“x‰ñ“]
+	//‰ñ“]‚ğ”½‰f
+	matWorld *= matRot;
 	//•½sˆÚ“®s—ñ
 
 	TexMetadata metadata{};

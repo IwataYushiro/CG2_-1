@@ -101,12 +101,6 @@ private://メンバ変数
 	XMMATRIX matScale;
 	//回転行列
 	XMMATRIX matRot;
-	//Z軸回転
-	XMMATRIX matRotZ;
-	//X軸回転
-	XMMATRIX matRotX;
-	//Y軸回転
-	XMMATRIX matRotY;
 	//平行移動行列
 	XMMATRIX matTrans;
 
