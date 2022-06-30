@@ -102,14 +102,29 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	//ビュー変換行列
 
+	//視点
 	eye = { 0.0f, 0.0f, -100.0f };
+	//注視点
 	target = { 0.0f, 0.0f, 0.0f };
+	//上方向ベクトル
 	up = { 0.0f, 1.0f, 0.0f };
 
 	matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 
 	//ワールド変換行列
 	matWorld = XMMatrixIdentity();
+	//スケーリング行列
+	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
+	matWorld *= matScale;
+	//回転行列
+	
+	//X軸回転
+	
+	//Y軸回転
+	
+	//Z軸回転
+	
+	//平行移動行列
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};

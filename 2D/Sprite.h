@@ -88,12 +88,27 @@ private://メンバ変数
 
 	//ビュー変換行列
 	XMMATRIX matview;
+	//視点
 	XMFLOAT3 eye;
+	//注視点
 	XMFLOAT3 target;
+	//上方向ベクトル
 	XMFLOAT3 up;
 	
 	//ワールド変換行列
 	XMMATRIX matWorld;
+	//スケーリング行列
+	XMMATRIX matScale;
+	//回転行列
+	XMMATRIX matRot;
+	//Z軸回転
+	XMMATRIX matRotZ;
+	//X軸回転
+	XMMATRIX matRotX;
+	//Y軸回転
+	XMMATRIX matRotY;
+	//平行移動行列
+	XMMATRIX matTrans;
 
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};
