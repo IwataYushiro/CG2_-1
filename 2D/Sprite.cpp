@@ -1,5 +1,6 @@
 #include "Sprite.h"
 #include <d3dcompiler.h>
+#include <dinput.h>
 #include <string>
 #include <DirectXTex.h>
 
@@ -101,7 +102,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	//ビュー変換行列
 	XMMATRIX matview;
-	XMFLOAT3 eye(50.0f, 50.0f, -100.0f);
+	XMFLOAT3 eye(0.0f, 0.0f, -100.0f);
 	XMFLOAT3 target(0.0f, 0.0f, 0.0f);
 	XMFLOAT3 up(0.0f, 1.0f, 0.0f);
 
@@ -445,8 +446,15 @@ void Sprite::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& bu
 	result = buffer->Map(0, nullptr, (void**)&cbm);//マッピング
 	assert(SUCCEEDED(result));
 }
-void Sprite::Update()
+void Sprite::Update(IDirectInputDevice8* keyboard,)
 {
+
+	//キーボード情報の取得開始
+	keyboard->Acquire();
+	//全キーの入力状態を取得する
+
+	keyboard->GetDeviceState(sizeof(keys), keys);
+
 
 }
 

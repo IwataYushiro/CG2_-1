@@ -99,4 +99,6 @@ private://メンバ変数
 
 	//パイプラインステートの生成
 	ID3D12PipelineState* pipelineState = nullptr;
+
+	float angle = 0.0f;//カメラの回転角
 };

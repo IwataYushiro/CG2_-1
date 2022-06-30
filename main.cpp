@@ -319,14 +319,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		
 			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
 			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		
-			//キーボード情報の取得開始
-			keyboard->Acquire();
-			//全キーの入力状態を取得する
-			
-			keyboard->GetDeviceState(sizeof(keys), keys);
-
-			
+	
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
