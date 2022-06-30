@@ -3,6 +3,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <cassert>
+#include <dinput.h>
 #include <DirectXMath.h>
 #include <wrl.h>
 
@@ -35,7 +36,7 @@ public: // メンバ関数
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
-	void Update();
+	void Update(BYTE* keys);
 
 	/// <summary>
 	/// 描画
@@ -43,7 +44,7 @@ public: // メンバ関数
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
 private://メンバ変数
-	
+
 	//ウィンドゥサイズ
 	const int windowWidth = 1280; //横幅
 	const int windowHeight = 720; //縦幅
@@ -62,18 +63,18 @@ private://メンバ変数
 		{{ 50.0f ,-50.0f ,0.0f},{1.0f,1.0f}},//右下					
 		{{ 50.0f , 50.0f ,0.0f},{1.0f,0.0f}},//右上					
 	};
-	
+
 	//インデックスデータ
 	unsigned short indices[6] =
 	{
 		0,1,2,//三角形1つ目
 		1,2,3,//三角形2つ目
 	};
-	
+
 	//定数バッファのGPUリソースのポインタ
 	ID3D12Resource* constBuffMaterial = nullptr;
 	ID3D12Resource* constBuffTransform = nullptr;
-	
+
 	//構造体を変数化
 	ConstBufferDataMaterial* cbdm = nullptr;
 	ConstBufferDataTransform* cbdt = nullptr;
@@ -81,6 +82,15 @@ private://メンバ変数
 	//マッピング用のポインタ
 	ConstBufferDataMaterial* constMapMaterial = nullptr;
 	ConstBufferDataTransform* constMapTransform = nullptr;
+
+	//射影行列
+	XMMATRIX matprojection;
+
+	//ビュー変換行列
+	XMMATRIX matview;
+	XMFLOAT3 eye;
+	XMFLOAT3 target;
+	XMFLOAT3 up;
 
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};
@@ -99,6 +109,8 @@ private://メンバ変数
 
 	//パイプラインステートの生成
 	ID3D12PipelineState* pipelineState = nullptr;
+
+
 
 	float angle = 0.0f;//カメラの回転角
 };

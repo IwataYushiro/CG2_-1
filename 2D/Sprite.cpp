@@ -1,7 +1,7 @@
 #include "Sprite.h"
 #include <d3dcompiler.h>
-#include <dinput.h>
 #include <string>
+#include <math.h>
 #include <DirectXTex.h>
 
 Sprite::Sprite()
@@ -85,31 +85,28 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	CreateConstBuffer<ConstBufferDataTransform, ConstBufferDataTransform>
 		(cbdt, device, constBuffTransform, constMapTransform);
-	
+
 	//値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-	
+
 	//単位行列を代入
 	//平行投影変換
 	//constMapTransform->mat = XMMatrixOrthographicOffCenterLH(0, windowWidth, windowHeight, 0, 0, 1);
-	
+
 	//透視投影変換行列の計算
-	XMMATRIX matprojection = XMMatrixPerspectiveFovLH(
+	matprojection = XMMatrixPerspectiveFovLH(
 		XMConvertToRadians(45.0f),
 		(float)windowWidth / windowHeight,
 		0.1f, 1000.0f
 	);
 
 	//ビュー変換行列
-	XMMATRIX matview;
-	XMFLOAT3 eye(0.0f, 0.0f, -100.0f);
-	XMFLOAT3 target(0.0f, 0.0f, 0.0f);
-	XMFLOAT3 up(0.0f, 1.0f, 0.0f);
+
+	eye = { 0.0f, 0.0f, -100.0f };
+	target = { 0.0f, 0.0f, 0.0f };
+	up = { 0.0f, 1.0f, 0.0f };
 
 	matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
-
-	//定数バッファに転送
-	constMapTransform->mat = matview * matprojection;
 
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
@@ -446,15 +443,22 @@ void Sprite::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& bu
 	result = buffer->Map(0, nullptr, (void**)&cbm);//マッピング
 	assert(SUCCEEDED(result));
 }
-void Sprite::Update(IDirectInputDevice8* keyboard,)
+void Sprite::Update(BYTE* keys)
 {
 
-	//キーボード情報の取得開始
-	keyboard->Acquire();
-	//全キーの入力状態を取得する
+	if (keys[DIK_D] || keys[DIK_A])
+	{
+		if (keys[DIK_D]) { angle += XMConvertToRadians(1.0f); }
+		else if (keys[DIK_A]) { angle -= XMConvertToRadians(1.0f); }
+		//angleラジアンだけy軸周りに回転、半径は-100
+		eye.x = -100.0f * sinf(angle);
+		eye.z = -100.0f * cosf(angle);
 
-	keyboard->GetDeviceState(sizeof(keys), keys);
+		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
+	}
 
+	//定数バッファに転送
+	constMapTransform->mat = matview * matprojection;
 
 }
 

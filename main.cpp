@@ -299,7 +299,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		// DirectX毎フレーム処理　ここから
-		
+
 		// バックバッファの番号を取得(2つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 		// 1.リソースバリアで書き込み可能に変更
@@ -316,11 +316,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 3.画面クリア			R	  G		B	A
-		
-			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	
 
+		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
+		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+
+
+		//キーボード情報の取得開始
+		keyboard->Acquire();
+		//全キーの入力状態を取得する
+		keyboard->GetDeviceState(sizeof(keys), keys);
+
+		sprite->Update(keys);
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
 		D3D12_VIEWPORT viewport{};
