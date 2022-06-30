@@ -121,7 +121,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
 	//スケーリングを反映
 	matWorld *= matScale;
-	
+
 	//回転行列
 	matRot = XMMatrixIdentity();
 	//Z軸回転
@@ -135,6 +135,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	//平行移動行列
 	matTrans = XMMatrixTranslation(-50.0f, 0.0f, 0.0f);
+
 	//平行移動を反映
 	matWorld *= matTrans;
 
@@ -487,11 +488,41 @@ void Sprite::Update(BYTE* keys)
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
 	//平行移動
-	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT || keys[DIK_LEFT]) {
+	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT] || keys[DIK_LEFT]) {
 
-		//ワールド変換行列
-		matWorld = XMMatrixIdentity();
+		//座標を移動(Z軸)
+		if (keys[DIK_UP]) { position.z += 1.0f; }
+		else if (keys[DIK_DOWN]) { position.z -= 1.0f; }
+
+		//座標を移動(X軸)
+		if (keys[DIK_RIGHT]) { position.x += 1.0f; }
+		else if (keys[DIK_LEFT]) { position.x -= 1.0f; }
 	}
+	//ワールド変換行列
+	matWorld = XMMatrixIdentity();
+
+	//スケーリング行列
+	matScale = XMMatrixScaling(1.0f, 0.5f, 1.0f);
+	//スケーリングを反映
+	matWorld *= matScale;
+
+	//回転行列
+	matRot = XMMatrixIdentity();
+	//Z軸回転
+	matRot *= XMMatrixRotationZ(XMConvertToRadians(0.0f)); //Z軸周りに0度回転してから
+	//X軸回転
+	matRot *= XMMatrixRotationX(XMConvertToRadians(15.0f)); //X軸周りに15度回転してから
+	//Y軸回転
+	matRot *= XMMatrixRotationY(XMConvertToRadians(30.0f)); //Y軸周りに30度回転
+
+	//回転を反映
+	matWorld *= matRot;
+
+	//平行移動行列
+	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	//平行移動を反映
+	matWorld *= matTrans;
+
 	//定数バッファに転送
 	constMapTransform->mat = matWorld * matview * matprojection;
 
