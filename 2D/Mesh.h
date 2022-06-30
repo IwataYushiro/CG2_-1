@@ -20,11 +20,11 @@ struct ConstBufferDataTransform
 	XMMATRIX mat; // 3D•ÏŠ·s—ñ
 
 };
-class Sprite
+class Mesh
 {
 public: // ƒƒ“ƒoŠÖ”
-	Sprite();
-	~Sprite();
+	Mesh();
+	~Mesh();
 	/// <summary>
 	/// ‰Šú‰»
 	/// </summary>

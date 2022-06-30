@@ -1,19 +1,19 @@
-#include "Sprite.h"
+#include "Mesh.h"
 #include <d3dcompiler.h>
 #include <string>
 #include <math.h>
 #include <DirectXTex.h>
 
-Sprite::Sprite()
+Mesh::Mesh()
 {
 
 }
 
-Sprite::~Sprite()
+Mesh::~Mesh()
 {
 }
 
-void Sprite::Initialize(HRESULT result, ID3D12Device* device)
+void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 {
 #pragma region 描画初期化処理
 
@@ -423,7 +423,7 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 }
 
 template<typename T1, typename T2>
-void Sprite::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buffer, T2*& cbm) {
+void Mesh::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buffer, T2*& cbm) {
 
 	HRESULT result;
 
@@ -453,7 +453,7 @@ void Sprite::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& bu
 	result = buffer->Map(0, nullptr, (void**)&cbm);//マッピング
 	assert(SUCCEEDED(result));
 }
-void Sprite::Update(BYTE* keys)
+void Mesh::Update(BYTE* keys)
 {
 	//視点を操作
 	if (keys[DIK_D] || keys[DIK_A])
@@ -506,7 +506,7 @@ void Sprite::Update(BYTE* keys)
 
 }
 
-void Sprite::Draw(ID3D12GraphicsCommandList* commandList)
+void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 {
 	//全頂点に対して
 	for (int i = 0; i < _countof(vertices_); i++)

@@ -12,7 +12,7 @@
 
 const float PI = 3.141592f;					//const floatでいい
 
-#include "2D/Sprite.h"
+#include "Mesh.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -272,9 +272,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
-	Sprite* sprite = new Sprite();
+	Mesh* mesh = new Mesh();
 
-	sprite->Initialize(result, device);
+	mesh->Initialize(result, device);
 
 #pragma region キーボード入力設定
 	BYTE preKeys[256];
@@ -326,7 +326,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//全キーの入力状態を取得する
 		keyboard->GetDeviceState(sizeof(keys), keys);
 
-		sprite->Update(keys);
+		mesh->Update(keys);
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
 		D3D12_VIEWPORT viewport{};
@@ -348,7 +348,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//シザー矩形設定コマンドを、コマンドリストに積む
 		commandList->RSSetScissorRects(1, &scissorRect);
 
-		sprite->Draw(commandList);
+		mesh->Draw(commandList);
 		// 4.描画コマンドここまで
 
 		// 5.リソースバリアを戻す
