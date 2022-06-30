@@ -83,7 +83,7 @@ private://メンバ変数
 	ConstBufferDataMaterial* constMapMaterial = nullptr;
 	ConstBufferDataTransform* constMapTransform = nullptr;
 
-	//射影行列
+	//射影変換行列
 	XMMATRIX matprojection;
 
 	//ビュー変換行列
@@ -91,6 +91,9 @@ private://メンバ変数
 	XMFLOAT3 eye;
 	XMFLOAT3 target;
 	XMFLOAT3 up;
+	
+	//ワールド変換行列
+	XMMATRIX matWorld;
 
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};

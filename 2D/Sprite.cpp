@@ -108,6 +108,9 @@ void Sprite::Initialize(HRESULT result, ID3D12Device* device)
 
 	matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 
+	//ワールド変換行列
+	matWorld = XMMatrixIdentity();
+
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
 	//WICテクスチャのロード
@@ -458,7 +461,7 @@ void Sprite::Update(BYTE* keys)
 	}
 
 	//定数バッファに転送
-	constMapTransform->mat = matview * matprojection;
+	constMapTransform->mat = matWorld * matview * matprojection;
 
 }
 
