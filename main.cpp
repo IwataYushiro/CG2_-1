@@ -313,13 +313,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// レンダーターゲットビューのハンドルを取得
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 		rtvHandle.ptr += bbIndex * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
-		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
+		mesh->GetRenderTargetView(commandList, rtvHandle);
 
 		// 3.画面クリア			R	  G		B	A
-
-		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-
+		mesh->ClearScreen(commandList, rtvHandle);
 
 		//キーボード情報の取得開始
 		keyboard->Acquire();
