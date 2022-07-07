@@ -374,7 +374,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	//サンプルマスクの設定
 	pipelineDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;			//標準設定
 	//ラスタライザの設定
-	pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;	//カリングしない
+	pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;	//カリングする(しないときはBACKをNONEにする)
 	pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
 	//ポリゴン内塗りつぶし
 	pipelineDesc.RasterizerState.DepthClipEnable = true;			//深度クリッピングを有効に
@@ -530,12 +530,17 @@ void Mesh::Update(BYTE* keys)
 	{
 		if (keys[DIK_D]) { angle += XMConvertToRadians(1.0f); }
 		else if (keys[DIK_A]) { angle -= XMConvertToRadians(1.0f); }
+		
 		//angleラジアンだけy軸周りに回転、半径は-100
 		eye.x = -100.0f * sinf(angle);
 		eye.z = -100.0f * cosf(angle);
 
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
+	if (keys[DIK_W])
+		{
+			rotation.x+=5;
+		}
 	//平行移動
 	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT] || keys[DIK_LEFT]) {
 
