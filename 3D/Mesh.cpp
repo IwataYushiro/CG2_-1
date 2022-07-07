@@ -117,7 +117,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	rotation = { 0.0f,0.0f,0.0f };
 	position = { 0.0f,0.0f,0.0f };
 
-	
+
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
 	//WICテクスチャのロード
@@ -142,7 +142,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	metadata.format = MakeSRGB(metadata.format);
 
 	//テクスチャバッファ設定
-	
+
 	// ヒープ設定
 	D3D12_HEAP_PROPERTIES textureHeapProp{};
 	textureHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
@@ -197,7 +197,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 		D3D12_RESOURCE_STATE_DEPTH_WRITE,	//深度値書き込みに必要
 		&depthClearValue,
 		IID_PPV_ARGS(&depthBuff));
-	
+
 	//全ミップマップについて
 	for (size_t i = 0; i < metadata.mipLevels; i++)
 	{
@@ -215,7 +215,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	}
 	//SRVの最大個数
 	const size_t kMaxSRVCount = 2056;
-	
+
 	//深度ビュー用デスクリプタヒープ生成
 	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
 	dsvHeapDesc.NumDescriptors = 1;//深度ビューは1つ
@@ -348,6 +348,16 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,		//入力データ種別(標準はD3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA)
 			0												//一度に描画するインスタンス数(0でいい)
 		},//座標以外に色、テクスチャUV等を渡す場合はさらに続ける
+		//法線ベクトル		
+		{
+			"NORMAL",
+			0,
+			DXGI_FORMAT_R32G32B32_FLOAT,
+			0,
+			D3D12_APPEND_ALIGNED_ELEMENT,
+			D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,
+			0
+		},
 		//uv座標(1行で書いた方が見やすい)
 		{
 			"TEXCOORD",
@@ -409,7 +419,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	pipelineDesc.DepthStencilState.DepthEnable = true;							//深度テストを行う
 	pipelineDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; //書き込み許可
 	pipelineDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;		//小さければ合格
-	pipelineDesc.DSVFormat= DXGI_FORMAT_D32_FLOAT;								//深度値フォーマット
+	pipelineDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;								//深度値フォーマット
 
 	//デスクリプタレンジの設定
 	D3D12_DESCRIPTOR_RANGE descriptorRange{};
@@ -530,17 +540,14 @@ void Mesh::Update(BYTE* keys)
 	{
 		if (keys[DIK_D]) { angle += XMConvertToRadians(1.0f); }
 		else if (keys[DIK_A]) { angle -= XMConvertToRadians(1.0f); }
-		
+
 		//angleラジアンだけy軸周りに回転、半径は-100
 		eye.x = -100.0f * sinf(angle);
 		eye.z = -100.0f * cosf(angle);
 
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
-	if (keys[DIK_W])
-		{
-			rotation.x+=5;
-		}
+
 	//平行移動
 	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT] || keys[DIK_LEFT]) {
 
