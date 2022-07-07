@@ -172,6 +172,9 @@ private://メンバ変数
 	//インデックスバッファビューの作成
 	D3D12_INDEX_BUFFER_VIEW idView{};
 
+	//深度ビュー用のデスクリプタヒープ
+	ID3D12DescriptorHeap* dsvHeap = nullptr;
+
 	//設定をもとにSRV用デスクリプタヒープを生成
 	ID3D12DescriptorHeap* srvHeap = nullptr;
 

@@ -215,6 +215,13 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	}
 	//SRVの最大個数
 	const size_t kMaxSRVCount = 2056;
+	
+	//深度ビュー用デスクリプタヒープ生成
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
+	dsvHeapDesc.NumDescriptors = 1;//深度ビューは1つ
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; //デプスステンシルビュー
+
+	result = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
 
 	//デスクリプタヒープ設定
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
@@ -258,6 +265,16 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	idView.BufferLocation = indexBuff->GetGPUVirtualAddress();
 	idView.Format = DXGI_FORMAT_R16_UINT;
 	idView.SizeInBytes = sizeIB;
+
+	//深度ビューの作成
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; //深度値フォーマット
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	device->CreateDepthStencilView(
+		depthBuff,
+		&dsvDesc,
+		dsvHeap->GetCPUDescriptorHandleForHeapStart()
+	);
 
 #pragma region 頂点シェーダー
 	ID3DBlob* vsBlob = nullptr;		//頂点シェーダーオブジェクト
@@ -388,6 +405,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;	//0～255指定のRGBA
 	pipelineDesc.SampleDesc.Count = 1;								//1ピクセルにつき1サンプリング
 
+	//
 	//デスクリプタレンジの設定
 	D3D12_DESCRIPTOR_RANGE descriptorRange{};
 	descriptorRange.NumDescriptors = 1;								//一度の描画に使うテクスチャが1枚なので1

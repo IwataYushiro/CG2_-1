@@ -280,7 +280,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	BYTE preKeys[256];
 	BYTE keys[256] = {};
 #pragma endregion
-
+	
 #pragma endregion
 	// 描画初期化処理　ここまで
 
@@ -327,6 +327,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		keyboard->GetDeviceState(sizeof(keys), keys);
 
 		mesh->Update(keys);
+
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
 		D3D12_VIEWPORT viewport{};
