@@ -140,7 +140,9 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	}
 	//読み込んだディフューズテクスチャをSRGBとして扱う
 	metadata.format = MakeSRGB(metadata.format);
+
 	//テクスチャバッファ設定
+	
 	// ヒープ設定
 	D3D12_HEAP_PROPERTIES textureHeapProp{};
 	textureHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
@@ -168,6 +170,34 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 		IID_PPV_ARGS(&texbuff));
 	assert(SUCCEEDED(result));
 
+	//深度バッファ設定
+	D3D12_RESOURCE_DESC depthResourceDesc{};
+	depthResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	depthResourceDesc.Width = windowWidth;		//レンダーターゲットに合わせる
+	depthResourceDesc.Height = windowHeight;	//レンダーターゲットに合わせる
+	depthResourceDesc.DepthOrArraySize = 1;
+	depthResourceDesc.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
+	depthResourceDesc.SampleDesc.Count = 1;
+	depthResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//デプスステンシル
+
+	//深度値用ヒーププロパティ
+	D3D12_HEAP_PROPERTIES depthHeapProp{};
+	depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT;
+	//深度値のクリア設定
+	D3D12_CLEAR_VALUE depthClearValue{};
+	depthClearValue.DepthStencil.Depth = 1.0f;//深度値1.0f(最大値)でクリア
+	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
+
+	//深度バッファ生成
+	ID3D12Resource* depthBuff = nullptr;
+	result = device->CreateCommittedResource(
+		&depthHeapProp,
+		D3D12_HEAP_FLAG_NONE,
+		&depthResourceDesc,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,	//深度値書き込みに必要
+		&depthClearValue,
+		IID_PPV_ARGS(&depthBuff));
+	
 	//全ミップマップについて
 	for (size_t i = 0; i < metadata.mipLevels; i++)
 	{
