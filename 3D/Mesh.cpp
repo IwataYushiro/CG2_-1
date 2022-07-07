@@ -405,7 +405,12 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;	//0～255指定のRGBA
 	pipelineDesc.SampleDesc.Count = 1;								//1ピクセルにつき1サンプリング
 
-	//
+	//デプスステンシルステートの設定
+	pipelineDesc.DepthStencilState.DepthEnable = true;							//深度テストを行う
+	pipelineDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; //書き込み許可
+	pipelineDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;		//小さければ合格
+	pipelineDesc.DSVFormat= DXGI_FORMAT_D32_FLOAT;								//深度値フォーマット
+
 	//デスクリプタレンジの設定
 	D3D12_DESCRIPTOR_RANGE descriptorRange{};
 	descriptorRange.NumDescriptors = 1;								//一度の描画に使うテクスチャが1枚なので1
