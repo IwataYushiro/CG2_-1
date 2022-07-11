@@ -53,6 +53,8 @@ private://メンバ変数
 	static const int VerticesCount_ = 24;
 	//インデックス数
 	static const int indicesCount_ = 36;
+	//オブジェクト数
+	static const int objectCount_ = 2;
 	//ウィンドゥサイズ
 	const int windowWidth = 1280; //横幅
 	const int windowHeight = 720; //縦幅
@@ -137,15 +139,15 @@ private://メンバ変数
 
 	//定数バッファのGPUリソースのポインタ
 	ID3D12Resource* constBuffMaterial = nullptr;
-	ID3D12Resource* constBuffTransform = nullptr;
+	ID3D12Resource* constBuffTransform[objectCount_] = { nullptr };
 
 	//構造体を変数化
 	ConstBufferDataMaterial* cbdm = nullptr;
-	ConstBufferDataTransform* cbdt = nullptr;
+	ConstBufferDataTransform* cbdt[objectCount_] = { nullptr };
 
 	//マッピング用のポインタ
 	ConstBufferDataMaterial* constMapMaterial = nullptr;
-	ConstBufferDataTransform* constMapTransform = nullptr;
+	ConstBufferDataTransform* constMapTransform[objectCount_] = { nullptr };
 
 	//射影変換行列
 	XMMATRIX matprojection;

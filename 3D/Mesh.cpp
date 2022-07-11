@@ -102,12 +102,15 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 
 
 	//定数バッファの設定
+
 	CreateConstBuffer<ConstBufferDataMaterial, ConstBufferDataMaterial>
 		(cbdm, device, constBuffMaterial, constMapMaterial);
-
-	CreateConstBuffer<ConstBufferDataTransform, ConstBufferDataTransform>
-		(cbdt, device, constBuffTransform, constMapTransform);
-
+	for (int i = 0; i < objectCount_; i++)
+	{
+		//i番の定数バッファ
+		CreateConstBuffer<ConstBufferDataTransform, ConstBufferDataTransform>
+			(cbdt[i], device, constBuffTransform[i], constMapTransform[i]);
+	}
 	//値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -534,7 +537,7 @@ void Mesh::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buff
 		IID_PPV_ARGS(&buffer));
 	assert(SUCCEEDED(result));
 
-
+	//定数バッファのマッピング
 	result = buffer->Map(0, nullptr, (void**)&cbm);//マッピング
 	assert(SUCCEEDED(result));
 }
@@ -606,7 +609,7 @@ void Mesh::Update(BYTE* keys)
 	//平行移動行列を反映
 	matWorld *= matTrans;
 	//定数バッファに転送
-	constMapTransform->mat = matWorld * matview * matprojection;
+	constMapTransform[0]->mat = matWorld * matview * matprojection;
 
 }
 
