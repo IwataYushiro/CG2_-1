@@ -49,7 +49,10 @@ public: // メンバ関数
 	void Draw(ID3D12GraphicsCommandList* commandList);
 
 private://メンバ変数
-
+	//頂点数
+	static const int VerticesCount_ = 24;
+	//インデックス数
+	static const int indicesCount_ = 36;
 	//ウィンドゥサイズ
 	const int windowWidth = 1280; //横幅
 	const int windowHeight = 720; //縦幅
@@ -62,7 +65,7 @@ private://メンバ変数
 	};
 
 	//頂点データ
-	Vertex vertices_[24] = {
+	Vertex vertices_[VerticesCount_] = {
 		//前(Z固定)
 		// x	 y	  z		  法線u	  v
 		{{-5.0f ,-5.0f ,-5.0f},{},{0.0f,1.0f}},//左下	Xが-で左　Yが-で下
@@ -104,7 +107,7 @@ private://メンバ変数
 	};
 
 	//インデックスデータ
-	unsigned short indices[36] =
+	unsigned short indices[indicesCount_] =
 	{
 		//前
 		0,1,2,//三角形1つ目

@@ -16,7 +16,29 @@ Mesh::~Mesh()
 void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 {
 #pragma region 描画初期化処理
-
+	for (int i = 0; i < VerticesCount_; i++)
+	{
+		//三角形一つごとに計算
+		//三角形のインデックスを取り出し、一時的な変数に入れる
+		unsigned short Index0 = indices[i * 3 + 0];
+		unsigned short Index1 = indices[i * 3 + 1];
+		unsigned short Index2 = indices[i * 3 + 2];
+		//三角形を構成する頂点座標をベクトルに代入
+		XMVECTOR p0 = XMLoadFloat3(&vertices_[Index0].pos);
+		XMVECTOR p1 = XMLoadFloat3(&vertices_[Index1].pos);
+		XMVECTOR p2 = XMLoadFloat3(&vertices_[Index2].pos);
+		//p0=>p1,p0=>p2ベクトルを計算(ベクトル減算)
+		XMVECTOR v1 = XMVectorSubtract(p1, p0);
+		XMVECTOR v2 = XMVectorSubtract(p2, p0);
+		//外積は両方から垂直なベクトル
+		XMVECTOR normal = XMVector3Cross(v1, v2);
+		//正規化(長さを1に)
+		normal = XMVector3Normalize(normal);
+		//求めた法線を頂点データに代入
+		XMStoreFloat3(&vertices_[Index0].normal, normal);
+		XMStoreFloat3(&vertices_[Index1].normal, normal);
+		XMStoreFloat3(&vertices_[Index2].normal, normal);
+	}
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(vertices_[0]) * _countof(vertices_));
 
