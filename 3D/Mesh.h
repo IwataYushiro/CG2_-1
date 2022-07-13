@@ -41,13 +41,15 @@ public: // メンバ関数
 	void GetRenderTargetView(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
 	//画面クリア設定
 	void ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
+	
 	void Update(BYTE* keys);
 
 	/// <summary>
 	/// 描画
 	/// </summary>
 	void Draw(ID3D12GraphicsCommandList* commandList);
-
+	//複数オブジェクト描画用
+	void DrawObject(ID3D12GraphicsCommandList* commandList, int num);
 private://メンバ変数
 	//頂点数
 	static const int VerticesCount_ = 24;
@@ -162,19 +164,19 @@ private://メンバ変数
 	XMFLOAT3 up;
 
 	//ワールド変換行列
-	XMMATRIX matWorld;
+	XMMATRIX matWorld[objectCount_];
 	//スケーリング行列
-	XMMATRIX matScale;
+	XMMATRIX matScale[objectCount_];
 	//スケーリング倍率
 	XMFLOAT3 scale;
 
 	//回転行列
-	XMMATRIX matRot;
+	XMMATRIX matRot[objectCount_];
 	//回転角
 	XMFLOAT3 rotation;
 
 	//平行移動行列
-	XMMATRIX matTrans;
+	XMMATRIX matTrans[objectCount_];
 	//座標
 	XMFLOAT3 position;
 

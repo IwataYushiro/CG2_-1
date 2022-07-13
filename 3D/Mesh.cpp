@@ -137,7 +137,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 
 	//ワールド変換行列(値の初期化)
-	matWorld = XMMatrixIdentity();
+	matWorld[0] = XMMatrixIdentity();
 	scale = { 1.0f,1.0f,1.0f };
 	rotation = { 0.0f,0.0f,0.0f };
 	position = { 0.0f,0.0f,0.0f };
@@ -558,6 +558,7 @@ void Mesh::ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIP
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
+
 void Mesh::Update(BYTE* keys)
 {
 	//視点を操作
@@ -585,31 +586,45 @@ void Mesh::Update(BYTE* keys)
 		else if (keys[DIK_LEFT]) { position.x -= 1.0f; }
 	}
 	//スケーリング行列
-	matScale = XMMatrixScaling(scale.x, scale.y, scale.z);
+	matScale[0] = XMMatrixScaling(scale.x, scale.y, scale.z);
 
 	//回転行列
-	matRot = XMMatrixIdentity();
+	matRot[0] = XMMatrixIdentity();
 	//Z軸回転
-	matRot *= XMMatrixRotationZ(XMConvertToRadians(rotation.z)); //Z軸周りに0度回転してから
+	matRot[0] *= XMMatrixRotationZ(XMConvertToRadians(rotation.z)); //Z軸周りに0度回転してから
 	//X軸回転
-	matRot *= XMMatrixRotationX(XMConvertToRadians(rotation.x)); //X軸周りに15度回転してから
+	matRot[0] *= XMMatrixRotationX(XMConvertToRadians(rotation.x)); //X軸周りに15度回転してから
 	//Y軸回転
-	matRot *= XMMatrixRotationY(XMConvertToRadians(rotation.y)); //Y軸周りに30度回転
+	matRot[0] *= XMMatrixRotationY(XMConvertToRadians(rotation.y)); //Y軸周りに30度回転
 
 	//平行移動行列
-	matTrans = XMMatrixTranslation(position.x, position.y, position.z);
+	matTrans[0] = XMMatrixTranslation(position.x, position.y, position.z);
 
 
 	//ワールド変換行列
-	matWorld = XMMatrixIdentity();
+	matWorld[0] = XMMatrixIdentity();
 	//ワールド行列にスケーリング行列を反映
-	matWorld *= matScale;
+	matWorld[0] *= matScale[0];
 	//回転行列を反映
-	matWorld *= matRot;
+	matWorld[0] *= matRot[0];
 	//平行移動行列を反映
-	matWorld *= matTrans;
+	matWorld[0] *= matTrans[0];
 	//定数バッファに転送
-	constMapTransform[0]->mat = matWorld * matview * matprojection;
+	constMapTransform[0]->mat = matWorld[0] * matview * matprojection;
+
+	//1番のワールド変換行列
+	matWorld[1] = XMMatrixIdentity();
+
+	//各種変形行列を計算
+	matScale[1] = XMMatrixScaling(1.0f, 1.0f, 1.0f);
+	matRot[1] = XMMatrixRotationY(XM_PI / 4.0f);
+	matTrans[1] = XMMatrixTranslation(-20.0f, 0.0f, 0.0f);
+
+	//ワールド行列の合成
+	matWorld[1] = matScale[1] * matRot[1] * matTrans[1];
+
+	//定数バッファに転送
+	constMapTransform[1]->mat = matWorld[1] * matview * matprojection;
 
 }
 
@@ -640,10 +655,17 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 	//定数バッファビュー(CBV)の設定コマンド
-	commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform->GetGPUVirtualAddress());
-
+	for (int i = 0; i < objectCount_; i++)
+	{
+		DrawObject(commandList, i);
+	}
 	//描画コマンド
-	//commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
+//commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
+}
+
+void Mesh::DrawObject(ID3D12GraphicsCommandList* commandList, int num)
+{
+	commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform[num]->GetGPUVirtualAddress());
 	//インデックスバッファを使う場合
 	commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0);
 }
