@@ -105,12 +105,6 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 
 	CreateConstBuffer<ConstBufferDataMaterial, ConstBufferDataMaterial>
 		(cbdm, device, constBuffMaterial, constMapMaterial);
-	for (int i = 0; i < objectCount_; i++)
-	{
-		//i番の定数バッファ
-		CreateConstBuffer<ConstBufferDataTransform, ConstBufferDataTransform>
-			(cbdt[i], device, constBuffTransform[i], constMapTransform[i]);
-	}
 	//値を書き込むと自動的に転送される
 	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
