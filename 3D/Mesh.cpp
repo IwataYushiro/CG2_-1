@@ -103,12 +103,13 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 
 	//定数バッファの設定
 	CreateConstBufferMaterial3d(&material3d_, device);
+
 	for (int i = 0; i < _countof(object3ds_); i++)
 	{
 		CreateConstBufferObject3d(&object3ds_[i], device);
 		//以下親子構造のサンプル
 		//先頭以外なら
-		if (i>0)
+		if (i > 0)
 		{
 			//1つ前のオブジェクトを親オブジェクトにする
 			object3ds_[i].parent = &object3ds_[i - 1];
@@ -116,12 +117,12 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 			object3ds_[i].scale = { 0.9f,0.9f,0.9f };
 			//親オブジェクトに対してZ軸周りに30度回転
 			object3ds_[i].rotation = { 0.0f,0.0f,XMConvertToRadians(30.0f) };
-			
+
 			//親オブジェクトに対してZ軸方向に-8.0fずらす
 			object3ds_[i].position = { 0.0f,0.0f,-8.0f };
 		}
 	}
-	
+
 	//値を書き込むと自動的に転送される
 	material3d_.constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -610,9 +611,9 @@ void Mesh::Update(BYTE* keys)
 	for (int i = 0; i < _countof(object3ds_); i++)
 	{
 		UpdateObject3d(&object3ds_[i], matview, matprojection);
-
 	}
-
+	//操作
+	ControlObject3d(&object3ds_[0], keys);
 }
 
 void Mesh::UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection)
@@ -621,7 +622,7 @@ void Mesh::UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matproj
 
 	//スケーリング等計算
 	matScale = XMMatrixScaling(object->scale.x, object->scale.y, object->scale.z);
-	
+
 	matRot = XMMatrixIdentity();
 	matRot *= XMMatrixRotationZ(object->rotation.z);
 	matRot *= XMMatrixRotationX(object->rotation.x);
@@ -635,13 +636,25 @@ void Mesh::UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matproj
 	object->matWorld *= matTrans;	//平行移動反映
 
 	//親オブジェクトがあれば
-	if (object->parent!=nullptr)
+	if (object->parent != nullptr)
 	{
 		//親オブジェクトのワールド行列を掛け算
 		object->matWorld *= object->parent->matWorld;
 	}
+
 	//定数バッファへデータ転送
 	object->constMapTransform->mat = object->matWorld * matview * matprojection;
+}
+//操作
+void Mesh::ControlObject3d(Object3d* object, BYTE* keys)
+{
+	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT] || keys[DIK_LEFT])
+	{
+		if (keys[DIK_UP]) { object->position.y += 1.0f; }
+		else if (keys[DIK_DOWN]) { object->position.y -= 1.0f;}
+		if (keys[DIK_RIGHT]) { object->position.x += 1.0f; }
+		else if (keys[DIK_LEFT]) { object->position.x -= 1.0f; }
+	}
 }
 void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 {
@@ -657,7 +670,10 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 
 	//プリミティブ形状の設定コマンド
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	//リストかストリップか
-	
+	// 頂点バッファビューの設定コマンド
+	commandList->IASetVertexBuffers(0, 1, &vdView);
+	// インデックスバッファビューの設定コマンド
+	commandList->IASetIndexBuffer(&idView);
 	//定数バッファビュー(CBV)の設定コマンド
 	commandList->SetGraphicsRootConstantBufferView(0, material3d_.constBuffMaterial->GetGPUVirtualAddress());
 	//SRVヒープの設定コマンド
@@ -683,7 +699,7 @@ void Mesh::DrawObject3d(Object3d* object, ID3D12GraphicsCommandList* commandList
 	// インデックスバッファビューの設定コマンド
 	commandList->IASetIndexBuffer(&idView);
 	//定数バッファビュー(CBV)の設定コマンド
-	commandList->SetGraphicsRootConstantBufferView(2,object->constBuffTransform->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(2, object->constBuffTransform->GetGPUVirtualAddress());
 	//インデックスバッファを使う場合
 	commandList->DrawIndexedInstanced(numIndices, 1, 0, 0, 0);
 }

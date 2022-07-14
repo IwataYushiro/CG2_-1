@@ -75,6 +75,7 @@ public: // ƒƒ“ƒoŠÖ”
 
 	void Update(BYTE* keys);
 	void UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection);
+	void ControlObject3d(Object3d* object, BYTE* keys);
 	/// <summary>
 	/// •`‰æ
 	/// </summary>
