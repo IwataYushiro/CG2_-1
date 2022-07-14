@@ -65,6 +65,7 @@ public: // メンバ関数
 	void CreateConstBufferObject3d(Object3d* object, ID3D12Device* device);
 	/// <summary>
 	/// 毎フレーム処理
+	
 	/// </summary>
 
 	//レンダーターゲット設定
@@ -73,7 +74,7 @@ public: // メンバ関数
 	void ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
 
 	void Update(BYTE* keys);
-
+	void UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection);
 	/// <summary>
 	/// 描画
 	/// </summary>

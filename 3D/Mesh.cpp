@@ -607,10 +607,42 @@ void Mesh::Update(BYTE* keys)
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
 
+	for (int i = 0; i < _countof(object3ds_); i++)
+	{
+		UpdateObject3d(&object3ds_[i], matview, matprojection);
 
+	}
 
 }
 
+void Mesh::UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection)
+{
+	XMMATRIX matScale, matRot, matTrans;
+
+	//スケーリング等計算
+	matScale = XMMatrixScaling(object->scale.x, object->scale.y, object->scale.z);
+	
+	matRot = XMMatrixIdentity();
+	matRot *= XMMatrixRotationZ(object->rotation.z);
+	matRot *= XMMatrixRotationX(object->rotation.x);
+	matRot *= XMMatrixRotationY(object->rotation.y);
+
+	matTrans = XMMatrixTranslation(object->position.x, object->position.y, object->position.z);
+	//ワールド行列合成
+	object->matWorld = XMMatrixIdentity();
+	object->matWorld *= matScale;	//スケーリング反映
+	object->matWorld *= matRot;		//回転反映
+	object->matWorld *= matTrans;	//平行移動反映
+
+	//親オブジェクトがあれば
+	if (object->parent!=nullptr)
+	{
+		//親オブジェクトのワールド行列を掛け算
+		object->matWorld *= object->parent->matWorld;
+	}
+	//定数バッファへデータ転送
+	object->constMapTransform->mat = object->matWorld * matview * matprojection;
+}
 void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 {
 	//全頂点に対して
