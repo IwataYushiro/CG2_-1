@@ -180,23 +180,6 @@ private://メンバ変数
 	//上方向ベクトル
 	XMFLOAT3 up;
 
-	//ワールド変換行列
-	XMMATRIX matWorld[objectCount_];
-	//スケーリング行列
-	XMMATRIX matScale[objectCount_];
-	//スケーリング倍率
-	XMFLOAT3 scale;
-
-	//回転行列
-	XMMATRIX matRot[objectCount_];
-	//回転角
-	XMFLOAT3 rotation;
-
-	//平行移動行列
-	XMMATRIX matTrans[objectCount_];
-	//座標
-	XMFLOAT3 position;
-
 	//頂点バッファビューの作成
 	D3D12_VERTEX_BUFFER_VIEW vdView{};
 

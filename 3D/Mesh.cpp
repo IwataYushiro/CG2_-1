@@ -130,13 +130,6 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 
 	matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 
-	//ワールド変換行列(値の初期化)
-	matWorld[0] = XMMatrixIdentity();
-	scale = { 1.0f,1.0f,1.0f };
-	rotation = { 0.0f,0.0f,0.0f };
-	position = { 0.0f,0.0f,0.0f };
-
-
 	TexMetadata metadata{};
 	ScratchImage scratchImg{};
 	//WICテクスチャのロード
@@ -568,57 +561,7 @@ void Mesh::Update(BYTE* keys)
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
 
-	//平行移動
-	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT] || keys[DIK_LEFT]) {
-
-		//座標を移動(Z軸)
-		if (keys[DIK_UP]) { position.z += 1.0f; }
-		else if (keys[DIK_DOWN]) { position.z -= 1.0f; }
-
-		//座標を移動(X軸)
-		if (keys[DIK_RIGHT]) { position.x += 1.0f; }
-		else if (keys[DIK_LEFT]) { position.x -= 1.0f; }
-	}
-	//スケーリング行列
-	matScale[0] = XMMatrixScaling(scale.x, scale.y, scale.z);
-
-	//回転行列
-	matRot[0] = XMMatrixIdentity();
-	//Z軸回転
-	matRot[0] *= XMMatrixRotationZ(XMConvertToRadians(rotation.z)); //Z軸周りに0度回転してから
-	//X軸回転
-	matRot[0] *= XMMatrixRotationX(XMConvertToRadians(rotation.x)); //X軸周りに15度回転してから
-	//Y軸回転
-	matRot[0] *= XMMatrixRotationY(XMConvertToRadians(rotation.y)); //Y軸周りに30度回転
-
-	//平行移動行列
-	matTrans[0] = XMMatrixTranslation(position.x, position.y, position.z);
-
-
-	//ワールド変換行列
-	matWorld[0] = XMMatrixIdentity();
-	//ワールド行列にスケーリング行列を反映
-	matWorld[0] *= matScale[0];
-	//回転行列を反映
-	matWorld[0] *= matRot[0];
-	//平行移動行列を反映
-	matWorld[0] *= matTrans[0];
-	//定数バッファに転送
-	constMapTransform[0]->mat = matWorld[0] * matview * matprojection;
-
-	//1番のワールド変換行列
-	matWorld[1] = XMMatrixIdentity();
-
-	//各種変形行列を計算
-	matScale[1] = XMMatrixScaling(1.0f, 1.0f, 1.0f);
-	matRot[1] = XMMatrixRotationY(XM_PI / 4.0f);
-	matTrans[1] = XMMatrixTranslation(-20.0f, 0.0f, 0.0f);
-
-	//ワールド行列の合成
-	matWorld[1] = matScale[1] * matRot[1] * matTrans[1];
-
-	//定数バッファに転送
-	constMapTransform[1]->mat = matWorld[1] * matview * matprojection;
+	
 
 }
 
@@ -649,10 +592,7 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 	//定数バッファビュー(CBV)の設定コマンド
-	for (int i = 0; i < objectCount_; i++)
-	{
-		DrawObject(commandList, i);
-	}
+	
 	//描画コマンド
 //commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
 }
