@@ -102,11 +102,28 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 
 
 	//定数バッファの設定
-
-	CreateConstBuffer<ConstBufferDataMaterial, ConstBufferDataMaterial>
-		(cbdm, device, constBuffMaterial, constMapMaterial);
+	CreateConstBufferMaterial3d(&material3d_, device);
+	for (int i = 0; i < _countof(object3ds_); i++)
+	{
+		CreateConstBufferObject3d(&object3ds_[i], device);
+		//以下親子構造のサンプル
+		//先頭以外なら
+		if (i>0)
+		{
+			//1つ前のオブジェクトを親オブジェクトにする
+			object3ds_[i].parent = &object3ds_[i - 1];
+			//親オブジェクトの9割の大きさ
+			object3ds_[i].scale = { 0.9f,0.9f,0.9f };
+			//親オブジェクトに対してZ軸周りに30度回転
+			object3ds_[i].rotation = { 0.0f,0.0f,XMConvertToRadians(30.0f) };
+			
+			//親オブジェクトに対してZ軸方向に-8.0fずらす
+			object3ds_[i].position = { 0.0f,0.0f,-8.0f };
+		}
+	}
+	
 	//値を書き込むと自動的に転送される
-	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	material3d_.constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	//単位行列を代入
 	//平行投影変換
@@ -497,8 +514,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 #pragma endregion
 }
 
-template<typename T1, typename T2>
-void Mesh::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buffer, T2*& cbm) {
+void Mesh::CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device) {
 
 	HRESULT result;
 
@@ -507,7 +523,7 @@ void Mesh::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buff
 	//リソース設定
 	D3D12_RESOURCE_DESC cbResourseDesc{};
 	cbResourseDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	cbResourseDesc.Width = (sizeof(cb) + 0xff) & ~0xff;//256バイトアラインメント
+	cbResourseDesc.Width = (sizeof(material->cbdm) + 0xff) & ~0xff;//256バイトアラインメント
 	cbResourseDesc.Height = 1;
 	cbResourseDesc.DepthOrArraySize = 1;
 	cbResourseDesc.MipLevels = 1;
@@ -521,14 +537,44 @@ void Mesh::CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buff
 		&cbResourseDesc, //リソース設定
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&buffer));
+		IID_PPV_ARGS(&material->constBuffMaterial));
 	assert(SUCCEEDED(result));
 
 	//定数バッファのマッピング
-	result = buffer->Map(0, nullptr, (void**)&cbm);//マッピング
+	result = material->constBuffMaterial->Map(0, nullptr, (void**)&material->constMapMaterial);//マッピング
 	assert(SUCCEEDED(result));
 }
 
+void Mesh::CreateConstBufferObject3d(Object3d* object, ID3D12Device* device) {
+
+	HRESULT result;
+
+	D3D12_HEAP_PROPERTIES cbHeapProp{};		//ヒープ設定
+	cbHeapProp.Type = D3D12_HEAP_TYPE_UPLOAD; //GPUへの転送用
+	//リソース設定
+	D3D12_RESOURCE_DESC cbResourseDesc{};
+	cbResourseDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	cbResourseDesc.Width = (sizeof(object->cbdt) + 0xff) & ~0xff;//256バイトアラインメント
+	cbResourseDesc.Height = 1;
+	cbResourseDesc.DepthOrArraySize = 1;
+	cbResourseDesc.MipLevels = 1;
+	cbResourseDesc.SampleDesc.Count = 1;
+	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+	//定数バッファの生成
+	result = device->CreateCommittedResource(
+		&cbHeapProp,//ヒープ設定
+		D3D12_HEAP_FLAG_NONE,
+		&cbResourseDesc, //リソース設定
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&object->constBuffTransform));
+	assert(SUCCEEDED(result));
+
+	//定数バッファのマッピング
+	result = object->constBuffTransform->Map(0, nullptr, (void**)&object->constMapTransform);//マッピング
+	assert(SUCCEEDED(result));
+}
 void Mesh::GetRenderTargetView(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle)
 {
 	// レンダーターゲットビューのハンドルを取得
@@ -561,7 +607,7 @@ void Mesh::Update(BYTE* keys)
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
 
-	
+
 
 }
 
@@ -584,7 +630,7 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	// インデックスバッファビューの設定コマンド
 	commandList->IASetIndexBuffer(&idView);
 	//定数バッファビュー(CBV)の設定コマンド
-	commandList->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(0, material3d_.constBuffMaterial->GetGPUVirtualAddress());
 	//SRVヒープの設定コマンド
 	commandList->SetDescriptorHeaps(1, &srvHeap);
 	// SRVヒープの先頭ハンドルを取得(SRVを指しているはず)
@@ -592,7 +638,7 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 	//定数バッファビュー(CBV)の設定コマンド
-	
+
 	//描画コマンド
 //commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
 }

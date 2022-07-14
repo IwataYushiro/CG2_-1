@@ -60,11 +60,9 @@ public: // メンバ関数
 	/// 初期化
 	/// </summary>
 	void Initialize(HRESULT result, ID3D12Device* device);
-
-	template<typename T1, typename T2>
-	void CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buffer, T2*& cbm);
 	//定数バッファの設定
-	void InitializeObject3d(Object3d* object, ID3D12Device* device);
+	void CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device);
+	void CreateConstBufferObject3d(Object3d* object, ID3D12Device* device);
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
