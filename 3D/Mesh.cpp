@@ -657,10 +657,7 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 
 	//プリミティブ形状の設定コマンド
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	//リストかストリップか
-	// 頂点バッファビューの設定コマンド
-	commandList->IASetVertexBuffers(0, 1, &vdView);
-	// インデックスバッファビューの設定コマンド
-	commandList->IASetIndexBuffer(&idView);
+	
 	//定数バッファビュー(CBV)の設定コマンド
 	commandList->SetGraphicsRootConstantBufferView(0, material3d_.constBuffMaterial->GetGPUVirtualAddress());
 	//SRVヒープの設定コマンド
@@ -669,15 +666,24 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
-	//定数バッファビュー(CBV)の設定コマンド
-
+	//全オブジェクト描画
+	for (int i = 0; i < _countof(object3ds_); i++)
+	{
+		DrawObject3d(&object3ds_[i], commandList, vdView, idView, _countof(indices));
+	}
 	//描画コマンド
 //commandList->DrawInstanced(_countof(vertices), 1, 0, 0);	//全ての頂点を使って描画
 }
 
-void Mesh::DrawObject(ID3D12GraphicsCommandList* commandList, int num)
+void Mesh::DrawObject3d(Object3d* object, ID3D12GraphicsCommandList* commandList,
+	D3D12_VERTEX_BUFFER_VIEW& vdView, D3D12_INDEX_BUFFER_VIEW& idView, UINT numIndices)
 {
-	commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform->GetGPUVirtualAddress());
+	// 頂点バッファビューの設定コマンド
+	commandList->IASetVertexBuffers(0, 1, &vdView);
+	// インデックスバッファビューの設定コマンド
+	commandList->IASetIndexBuffer(&idView);
+	//定数バッファビュー(CBV)の設定コマンド
+	commandList->SetGraphicsRootConstantBufferView(2,object->constBuffTransform->GetGPUVirtualAddress());
 	//インデックスバッファを使う場合
-	commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0);
+	commandList->DrawIndexedInstanced(numIndices, 1, 0, 0, 0);
 }

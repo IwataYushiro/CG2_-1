@@ -80,7 +80,8 @@ public: // メンバ関数
 	/// </summary>
 	void Draw(ID3D12GraphicsCommandList* commandList);
 	//複数オブジェクト描画用
-	void DrawObject(ID3D12GraphicsCommandList* commandList, int num);
+	void DrawObject3d(Object3d* object,ID3D12GraphicsCommandList* commandList,
+		D3D12_VERTEX_BUFFER_VIEW& vdView,D3D12_INDEX_BUFFER_VIEW& idView,UINT numIndices);
 private://メンバ変数
 	//頂点数
 	static const int VerticesCount_ = 24;
