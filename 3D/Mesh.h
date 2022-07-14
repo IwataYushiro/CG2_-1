@@ -20,11 +20,25 @@ struct ConstBufferDataTransform
 	XMMATRIX mat; // 3D変換行列
 
 };
+struct Material3d
+{
+	//定数バッファのGPUリソースのポインタ
+	ID3D12Resource* constBuffMaterial = nullptr;
+	
+	//構造体を変数化
+	ConstBufferDataMaterial* cbdm = nullptr;
+	
+	//マッピング用のポインタ
+	ConstBufferDataMaterial* constMapMaterial = nullptr;
+	
+};
 //3Dオブジェクト型
 struct Object3d
 {
 	//定数バッファ(行列用)
 	ID3D12Resource* constBuffTransform;
+	//構造体を変数化
+	ConstBufferDataTransform* cbdt = nullptr;
 	//定数バッファマップ(行列用)
 	ConstBufferDataTransform* constMapTransform;
 	//アフィン変換情報
@@ -49,7 +63,8 @@ public: // メンバ関数
 
 	template<typename T1, typename T2>
 	void CreateConstBuffer(T1* cb, ID3D12Device* device, ID3D12Resource*& buffer, T2*& cbm);
-
+	//定数バッファの設定
+	void InitializeObject3d(Object3d* object, ID3D12Device* device);
 	/// <summary>
 	/// 毎フレーム処理
 	/// </summary>
@@ -58,7 +73,7 @@ public: // メンバ関数
 	void GetRenderTargetView(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
 	//画面クリア設定
 	void ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
-	
+
 	void Update(BYTE* keys);
 
 	/// <summary>
@@ -73,7 +88,12 @@ private://メンバ変数
 	//インデックス数
 	static const int indicesCount_ = 36;
 	//オブジェクト数
-	static const int objectCount_ = 2;
+	static const size_t kObjectCount_ = 50;
+	//3Dマテリアル
+	Material3d material3d_;
+	//3Dオブジェクトの配列
+	Object3d object3ds_[kObjectCount_];
+	
 	//ウィンドゥサイズ
 	const int windowWidth = 1280; //横幅
 	const int windowHeight = 720; //縦幅
@@ -158,15 +178,15 @@ private://メンバ変数
 
 	//定数バッファのGPUリソースのポインタ
 	ID3D12Resource* constBuffMaterial = nullptr;
-	ID3D12Resource* constBuffTransform[objectCount_] = { nullptr };
+	ID3D12Resource* constBuffTransform = nullptr;
 
 	//構造体を変数化
 	ConstBufferDataMaterial* cbdm = nullptr;
-	ConstBufferDataTransform* cbdt[objectCount_] = { nullptr };
+	ConstBufferDataTransform* cbdt = nullptr;
 
 	//マッピング用のポインタ
 	ConstBufferDataMaterial* constMapMaterial = nullptr;
-	ConstBufferDataTransform* constMapTransform[objectCount_] = { nullptr };
+	ConstBufferDataTransform* constMapTransform = nullptr;
 
 	//射影変換行列
 	XMMATRIX matprojection;

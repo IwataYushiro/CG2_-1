@@ -599,7 +599,7 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 
 void Mesh::DrawObject(ID3D12GraphicsCommandList* commandList, int num)
 {
-	commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform[num]->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(2, constBuffTransform->GetGPUVirtualAddress());
 	//インデックスバッファを使う場合
 	commandList->DrawIndexedInstanced(_countof(indices), 1, 0, 0, 0);
 }
