@@ -177,18 +177,6 @@ private://メンバ変数
 
 	};
 
-	//定数バッファのGPUリソースのポインタ
-	ID3D12Resource* constBuffMaterial = nullptr;
-	ID3D12Resource* constBuffTransform = nullptr;
-
-	//構造体を変数化
-	ConstBufferDataMaterial* cbdm = nullptr;
-	ConstBufferDataTransform* cbdt = nullptr;
-
-	//マッピング用のポインタ
-	ConstBufferDataMaterial* constMapMaterial = nullptr;
-	ConstBufferDataTransform* constMapTransform = nullptr;
-
 	//射影変換行列
 	XMMATRIX matprojection;
 
