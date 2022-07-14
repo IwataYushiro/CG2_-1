@@ -20,6 +20,23 @@ struct ConstBufferDataTransform
 	XMMATRIX mat; // 3D変換行列
 
 };
+//3Dオブジェクト型
+struct Object3d
+{
+	//定数バッファ(行列用)
+	ID3D12Resource* constBuffTransform;
+	//定数バッファマップ(行列用)
+	ConstBufferDataTransform* constMapTransform;
+	//アフィン変換情報
+	XMFLOAT3 scale = { 1.0f,1.0f,1.0f };
+	XMFLOAT3 rotation = { 0.0f,0.0f,0.0f };
+	XMFLOAT3 position = { 0.0f,0.0f,0.0f };
+	//ワールド変換行列
+	XMMATRIX matWorld;
+	//親オブジェクトへのポインタ
+	Object3d* parent = nullptr;
+};
+
 class Mesh
 {
 public: // メンバ関数
