@@ -108,18 +108,29 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	{
 		CreateConstBufferObject3d(&object3ds_[i], device);
 		//以下親子構造のサンプル
+		//乱数シードを生成
+		std::random_device seed_gen;
+		//メルセンヌ・ツイスターの乱数エンジンを生成
+		std::mt19937_64 engine(seed_gen());
+		//乱数範囲を指定
+		std::uniform_real_distribution<float> dist(-25.0f , 25.0f);
+
+		//乱数エンジンを変数に渡す
+		float randPosX = dist(engine);
+		float randPosY = dist(engine);
+		float randPosZ = dist(engine);
 		//先頭以外なら
 		if (i > 0)
 		{
-			//1つ前のオブジェクトを親オブジェクトにする
-			object3ds_[i].parent = &object3ds_[i - 1];
+			//1つ前のオブジェクトを親オブジェクトにする//これがないと追従しなくなる
+			//object3ds_[i].parent = &object3ds_[i - 1];
 			//親オブジェクトの9割の大きさ
-			object3ds_[i].scale = { 0.9f,0.9f,0.9f };
+			object3ds_[i].scale = { 0.5f,0.5f,0.5f };
 			//親オブジェクトに対してZ軸周りに30度回転
 			object3ds_[i].rotation = { 0.0f,0.0f,XMConvertToRadians(30.0f) };
 
 			//親オブジェクトに対してZ軸方向に-8.0fずらす
-			object3ds_[i].position = { 0.0f,0.0f,-8.0f };
+			object3ds_[i].position = { randPosX,randPosY,randPosZ };
 		}
 	}
 
