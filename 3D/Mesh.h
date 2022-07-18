@@ -201,7 +201,8 @@ private://メンバ変数
 
 	//インデックスバッファビューの作成
 	D3D12_INDEX_BUFFER_VIEW idView{};
-
+	//テクスチャバッファを進める用
+	UINT incrementSize;
 	//深度ビュー用のデスクリプタヒープ
 	ID3D12DescriptorHeap* dsvHeap = nullptr;
 

@@ -206,6 +206,69 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 		);
 		assert(SUCCEEDED(result));
 	}
+
+	TexMetadata metadata2{};
+	ScratchImage scratchImg2{};
+	//WICテクスチャのロード
+	result = LoadFromWICFile(
+		L"Resources/reimu.png",	//Resourcesフォルダのtexture.png
+		WIC_FLAGS_NONE,
+		&metadata2, scratchImg2);
+
+	assert(SUCCEEDED(result));
+
+	ScratchImage mipChain2{};
+	//ミップマップ生成
+	result = GenerateMipMaps(
+		scratchImg2.GetImages(), scratchImg2.GetImageCount(), scratchImg2.GetMetadata(),
+		TEX_FILTER_DEFAULT, 0, mipChain2);
+	if (SUCCEEDED(result))
+	{
+		scratchImg2 = std::move(mipChain2);
+		metadata2 = scratchImg2.GetMetadata();
+	}
+	//読み込んだディフューズテクスチャをSRGBとして扱う
+	metadata2.format = MakeSRGB(metadata2.format);
+
+	//テクスチャバッファ設定
+	//リソース設定
+	D3D12_RESOURCE_DESC textureResourceDesc2{};
+	textureResourceDesc2.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	textureResourceDesc2.Format = metadata2.format;
+	textureResourceDesc2.Width = metadata2.width;							//幅
+	textureResourceDesc2.Height = (UINT16)metadata2.height;				//高さ
+	textureResourceDesc2.DepthOrArraySize = (UINT16)metadata2.arraySize;
+	textureResourceDesc2.MipLevels = (UINT16)metadata2.mipLevels;
+	textureResourceDesc2.SampleDesc.Count = 1;
+
+	//テクスチャバッファの生成
+	ID3D12Resource* texbuff2 = nullptr;
+	result = device->CreateCommittedResource(
+		&textureHeapProp,
+		D3D12_HEAP_FLAG_NONE,
+		&textureResourceDesc2,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&texbuff2));
+	assert(SUCCEEDED(result));
+
+
+
+	//全ミップマップについて
+	for (size_t i = 0; i < metadata2.mipLevels; i++)
+	{
+		//ミップマップレベルを指定してイメージを取得
+		const Image* img2 = scratchImg2.GetImage(i, 0, 0);
+		//テクスチャバッファにデータ転送
+		result = texbuff2->WriteToSubresource(
+			(UINT)i,
+			nullptr,							//全領域へコピー
+			img2->pixels,						//元データアドレス
+			(UINT)img2->rowPitch,				//1ラインサイズ
+			(UINT)img2->slicePitch				//1枚サイズ
+		);
+		assert(SUCCEEDED(result));
+	}
 	//SRVの最大個数
 	const size_t kMaxSRVCount = 2056;
 
@@ -221,16 +284,20 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 
 	//SRVヒープの戦闘ハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
+	//1つハンドルを進める
+	incrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	srvHandle.ptr += incrementSize;
+
 	//シェーダーリソースビュー設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};				//設定構造体
-	srvDesc.Format = resDesc.Format;
-	srvDesc.Shader4ComponentMapping =
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};				//設定構造体
+	srvDesc2.Format = resDesc.Format;
+	srvDesc2.Shader4ComponentMapping =
 		D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;	//2Dテクスチャ
-	srvDesc.Texture2D.MipLevels = resDesc.MipLevels;
+	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;	//2Dテクスチャ
+	srvDesc2.Texture2D.MipLevels = resDesc.MipLevels;
 
 	//ハンドルの指す位置にシェーダーリソースビュー作成
-	device->CreateShaderResourceView(texbuff, &srvDesc, srvHandle);
+	device->CreateShaderResourceView(texbuff2, &srvDesc2, srvHandle);
 
 
 	//深度バッファ設定
@@ -702,6 +769,7 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	commandList->SetDescriptorHeaps(1, &srvHeap);
 	// SRVヒープの先頭ハンドルを取得(SRVを指しているはず)
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
+	srvGpuHandle.ptr += incrementSize;
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 	//全オブジェクト描画
