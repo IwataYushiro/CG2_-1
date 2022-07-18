@@ -61,9 +61,14 @@ public: // メンバ関数
 	/// 初期化
 	/// </summary>
 	void Initialize(HRESULT result, ID3D12Device* device);
+	
 	//定数バッファの設定
 	void CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device);
 	void CreateConstBufferObject3d(Object3d* object, ID3D12Device* device);
+	
+	//オブジェクトの初期化
+	void SetObject3ds(int num);
+
 	/// <summary>
 	/// 毎フレーム処理
 	

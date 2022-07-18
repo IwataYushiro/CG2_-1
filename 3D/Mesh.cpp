@@ -104,34 +104,12 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	//定数バッファの設定
 	CreateConstBufferMaterial3d(&material3d_, device);
 
+	//オブジェクトの初期化
 	for (int i = 0; i < _countof(object3ds_); i++)
 	{
 		CreateConstBufferObject3d(&object3ds_[i], device);
 		//以下親子構造のサンプル
-		//乱数シードを生成
-		std::random_device seed_gen;
-		//メルセンヌ・ツイスターの乱数エンジンを生成
-		std::mt19937_64 engine(seed_gen());
-		//乱数範囲を指定
-		std::uniform_real_distribution<float> dist(-25.0f , 25.0f);
-
-		//乱数エンジンを変数に渡す
-		float randPosX = dist(engine);
-		float randPosY = dist(engine);
-		float randPosZ = dist(engine);
-		//先頭以外なら
-		if (i > 0)
-		{
-			//1つ前のオブジェクトを親オブジェクトにする//これがないと追従しなくなる
-			//object3ds_[i].parent = &object3ds_[i - 1];
-			//親オブジェクトの9割の大きさ
-			object3ds_[i].scale = { 0.5f,0.5f,0.5f };
-			//親オブジェクトに対してZ軸周りに30度回転
-			object3ds_[i].rotation = { 0.0f,0.0f,XMConvertToRadians(30.0f) };
-
-			//親オブジェクトに対してZ軸方向に-8.0fずらす
-			object3ds_[i].position = { randPosX,randPosY,randPosZ };
-		}
+		SetObject3ds(i);
 	}
 
 	//値を書き込むと自動的に転送される
@@ -590,6 +568,34 @@ void Mesh::CreateConstBufferObject3d(Object3d* object, ID3D12Device* device) {
 	result = object->constBuffTransform->Map(0, nullptr, (void**)&object->constMapTransform);//マッピング
 	assert(SUCCEEDED(result));
 }
+//オブジェクトの初期化
+void Mesh::SetObject3ds(int num)
+{
+	//乱数シードを生成
+	std::random_device seed_gen;
+	//メルセンヌ・ツイスターの乱数エンジンを生成
+	std::mt19937_64 engine(seed_gen());
+	//乱数範囲を指定
+	std::uniform_real_distribution<float> dist(-25.0f, 25.0f);
+
+	//乱数エンジンを変数に渡す
+	float randPosX = dist(engine);
+	float randPosY = dist(engine);
+	float randPosZ = dist(engine);
+	//先頭以外なら
+	if (num > 0)
+	{
+		//1つ前のオブジェクトを親オブジェクトにする//これがないと追従しなくなる
+		//object3ds_[i].parent = &object3ds_[i - 1];
+		//親オブジェクトの9割の大きさ
+		object3ds_[num].scale = { 0.5f,0.5f,0.5f };
+		//親オブジェクトに対してZ軸周りに30度回転
+		object3ds_[num].rotation = { 0.0f,0.0f,XMConvertToRadians(30.0f) };
+
+		//親オブジェクトに対してZ軸方向に-8.0fずらす
+		object3ds_[num].position = { randPosX,randPosY,randPosZ };
+	}
+}
 void Mesh::GetRenderTargetView(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle)
 {
 	// レンダーターゲットビューのハンドルを取得
@@ -659,6 +665,7 @@ void Mesh::UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matproj
 	//定数バッファへデータ転送
 	object->constMapTransform->mat = object->matWorld * matview * matprojection;
 }
+
 //操作
 void Mesh::ControlObject3d(Object3d* object, BYTE* keys)
 {
@@ -670,6 +677,7 @@ void Mesh::ControlObject3d(Object3d* object, BYTE* keys)
 		else if (keys[DIK_LEFT]) { object->position.x -= 1.0f; }
 	}
 }
+
 void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 {
 	//全頂点に対して
