@@ -21,43 +21,45 @@ struct ConstBufferDataTransform
 	XMMATRIX mat; // 3D変換行列
 
 };
-struct Material3d
-{
-	//定数バッファのGPUリソースのポインタ
-	ID3D12Resource* constBuffMaterial = nullptr;
-	
-	//構造体を変数化
-	ConstBufferDataMaterial* cbdm = nullptr;
-	
-	//マッピング用のポインタ
-	ConstBufferDataMaterial* constMapMaterial = nullptr;
-	
-};
-//3Dオブジェクト型
-struct Object3d
-{
-	//定数バッファ(行列用)
-	ID3D12Resource* constBuffTransform = nullptr;
-	//構造体を変数化
-	ConstBufferDataTransform* cbdt = nullptr;
-	//定数バッファマップ(行列用)
-	ConstBufferDataTransform* constMapTransform = nullptr;
-	//アフィン変換情報
-	XMFLOAT3 scale = { 1.0f,1.0f,1.0f };
-	XMFLOAT3 rotation = { 0.0f,0.0f,0.0f };
-	XMFLOAT3 position = { 0.0f,0.0f,0.0f };
-	//ワールド変換行列
-	XMMATRIX matWorld = XMMatrixIdentity();
-	//親オブジェクトへのポインタ
-	Object3d* parent = nullptr;
-};
 
 class Mesh
 {
 public: // メンバ関数
 	//エイリアステンプレート
-	template <class T> using Comptr = Microsoft::WRL::ComPtr<T>;
+	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+private:
+	struct Material3d
+	{
+		//定数バッファのGPUリソースのポインタ
+		ID3D12Resource* constBuffMaterial = nullptr;
 
+		//構造体を変数化
+		ConstBufferDataMaterial* cbdm = nullptr;
+
+		//マッピング用のポインタ
+		ConstBufferDataMaterial* constMapMaterial = nullptr;
+
+	};
+	//3Dオブジェクト型
+	struct Object3d
+	{
+		//定数バッファ(行列用)
+		ID3D12Resource* constBuffTransform = nullptr;
+		//構造体を変数化
+		ConstBufferDataTransform* cbdt = nullptr;
+		//定数バッファマップ(行列用)
+		ConstBufferDataTransform* constMapTransform = nullptr;
+		//アフィン変換情報
+		XMFLOAT3 scale = { 1.0f,1.0f,1.0f };
+		XMFLOAT3 rotation = { 0.0f,0.0f,0.0f };
+		XMFLOAT3 position = { 0.0f,0.0f,0.0f };
+		//ワールド変換行列
+		XMMATRIX matWorld = XMMatrixIdentity();
+		//親オブジェクトへのポインタ
+		Object3d* parent = nullptr;
+	};
+
+public:
 	Mesh();
 	~Mesh();
 	/// <summary>
@@ -96,9 +98,9 @@ public: // メンバ関数
 private://メンバ変数
 
 	//頂点数
-	static const int VerticesCount_ = 24;
+	static const size_t VerticesCount_ = 24;
 	//インデックス数
-	static const int indicesCount_ = 36;
+	static const size_t indicesCount_ = 36;
 	//オブジェクト数
 	static const size_t kObjectCount_ = 50;
 	//3Dマテリアル
@@ -205,28 +207,30 @@ private://メンバ変数
 
 	//インデックスバッファビューの作成
 	D3D12_INDEX_BUFFER_VIEW idView{};
+
 	//テクスチャバッファを進める用
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle;
+
 	static const int textureCount = 2;
 	UINT incrementSize;
 	//フラグ
 	bool isSpace;
 
-	//深度ビュー用のデスクリプタヒープ
-	ID3D12DescriptorHeap* dsvHeap = nullptr;
+	//深度ビュー用のデスクリプタヒープを生成
+	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
 
 	//設定をもとにSRV用デスクリプタヒープを生成
-	ID3D12DescriptorHeap* srvHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> srvHeap = nullptr;
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	Vertex* vertMap = nullptr;
 
 	//ルートシグネチャ
-	ID3D12RootSignature* rootSignature;
+	ComPtr<ID3D12RootSignature> rootSignature;
 
 	//パイプラインステートの生成
-	ID3D12PipelineState* pipelineState = nullptr;
+	ComPtr<ID3D12PipelineState> pipelineState = nullptr;
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 

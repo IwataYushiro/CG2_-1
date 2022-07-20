@@ -56,7 +56,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	//頂点バッファの生成
-	ID3D12Resource* vertBuff = nullptr;
+	ComPtr<ID3D12Resource> vertBuff = nullptr;
 	result = device->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
@@ -78,7 +78,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	//インデックスバッファの生成
-	ID3D12Resource* indexBuff = nullptr;
+	ComPtr<ID3D12Resource> indexBuff = nullptr;
 	result = device->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
@@ -181,7 +181,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	textureResourceDesc.SampleDesc.Count = 1;
 
 	//テクスチャバッファの生成
-	ID3D12Resource* texbuff = nullptr;
+	ComPtr<ID3D12Resource> texbuff = nullptr;
 	result = device->CreateCommittedResource(
 		&textureHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -244,7 +244,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	textureResourceDesc2.SampleDesc.Count = 1;
 
 	//テクスチャバッファの生成
-	ID3D12Resource* texbuff2 = nullptr;
+	ComPtr<ID3D12Resource> texbuff2 = nullptr;
 	result = device->CreateCommittedResource(
 		&textureHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -297,7 +297,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	srvDesc.Texture2D.MipLevels = resDesc.MipLevels;
 
 	//ハンドルの指す位置にシェーダーリソースビュー作成
-	device->CreateShaderResourceView(texbuff, &srvDesc, srvHandle);
+	device->CreateShaderResourceView(texbuff.Get(), &srvDesc, srvHandle);
 	//1つハンドルを進める
 	incrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	srvHandle.ptr += incrementSize;
@@ -311,7 +311,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	srvDesc2.Texture2D.MipLevels = resDesc.MipLevels;
 
 	//ハンドルの指す位置にシェーダーリソースビュー作成
-	device->CreateShaderResourceView(texbuff2, &srvDesc2, srvHandle);
+	device->CreateShaderResourceView(texbuff2.Get(), &srvDesc2, srvHandle);
 
 
 	//深度バッファ設定
@@ -333,7 +333,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
 
 	//深度バッファ生成
-	ID3D12Resource* depthBuff = nullptr;
+	ComPtr<ID3D12Resource> depthBuff = nullptr;
 	result = device->CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -374,16 +374,16 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; //深度値フォーマット
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	device->CreateDepthStencilView(
-		depthBuff,
+		depthBuff.Get(),
 		&dsvDesc,
 		dsvHeap->GetCPUDescriptorHandleForHeapStart()
 	);
 
 #pragma region 頂点シェーダー
-	ID3DBlob* vsBlob = nullptr;		//頂点シェーダーオブジェクト
-	ID3DBlob* psBlob = nullptr;		//ピクセルシェーダーオブジェクト
-	ID3DBlob* errorBlob = nullptr;	//エラーオブジェクト
-
+	ComPtr<ID3DBlob> vsBlob = nullptr;		//頂点シェーダーオブジェクト
+	ComPtr<ID3DBlob> psBlob = nullptr;		//ピクセルシェーダーオブジェクト
+	ComPtr<ID3DBlob> errorBlob = nullptr;	//エラーオブジェクト
+				   
 	//頂点シェーダーの読み込みとコンパイル
 	result = D3DCompileFromFile(
 		L"BasicVS.hlsl",								//シェーダーファイル名
@@ -569,16 +569,17 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	rootSignatureDesc.NumStaticSamplers = 1;
 
 	// ルートシグネチャのシリアライズ
-	ID3DBlob* rootSigBlob = nullptr;
+	ComPtr<ID3DBlob> rootSigBlob = nullptr;
 	result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0,
 		&rootSigBlob, &errorBlob);
 	assert(SUCCEEDED(result));
+
 	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
 		IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(result));
-	rootSigBlob->Release();
+	
 	// パイプラインにルートシグネチャをセット
-	pipelineDesc.pRootSignature = rootSignature;
+	pipelineDesc.pRootSignature = rootSignature.Get();
 #pragma endregion
 
 #pragma region パイプラインステートの生成
@@ -905,8 +906,8 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	}
 
 	//パイプラインステートとルートシグネチャの設定コマンド
-	commandList->SetPipelineState(pipelineState);
-	commandList->SetGraphicsRootSignature(rootSignature);
+	commandList->SetPipelineState(pipelineState.Get());
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
 
 	//プリミティブ形状の設定コマンド
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	//リストかストリップか
