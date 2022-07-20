@@ -37,17 +37,17 @@ struct Material3d
 struct Object3d
 {
 	//定数バッファ(行列用)
-	ID3D12Resource* constBuffTransform;
+	ID3D12Resource* constBuffTransform = nullptr;
 	//構造体を変数化
 	ConstBufferDataTransform* cbdt = nullptr;
 	//定数バッファマップ(行列用)
-	ConstBufferDataTransform* constMapTransform;
+	ConstBufferDataTransform* constMapTransform = nullptr;
 	//アフィン変換情報
 	XMFLOAT3 scale = { 1.0f,1.0f,1.0f };
 	XMFLOAT3 rotation = { 0.0f,0.0f,0.0f };
 	XMFLOAT3 position = { 0.0f,0.0f,0.0f };
 	//ワールド変換行列
-	XMMATRIX matWorld;
+	XMMATRIX matWorld = XMMatrixIdentity();
 	//親オブジェクトへのポインタ
 	Object3d* parent = nullptr;
 };
@@ -65,7 +65,8 @@ public: // メンバ関数
 	//定数バッファの設定
 	void CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device);
 	void CreateConstBufferObject3d(Object3d* object, ID3D12Device* device);
-	
+	//
+	void CreateTextureBuffer(ID3D12Device* device, D3D12_RESOURCE_DESC resDesc);
 	//オブジェクトの初期化
 	void SetObject3ds(int num);
 
@@ -79,7 +80,7 @@ public: // メンバ関数
 	//画面クリア設定
 	void ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
 
-	void Update(BYTE* keys);
+	void Update(BYTE* keys, BYTE* preKeys, ID3D12Device* device);
 	void UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection);
 	void ControlObject3d(Object3d* object, BYTE* keys);
 	/// <summary>
@@ -202,7 +203,13 @@ private://メンバ変数
 	//インデックスバッファビューの作成
 	D3D12_INDEX_BUFFER_VIEW idView{};
 	//テクスチャバッファを進める用
+	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
+	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle;
+	static const int textureCount = 2;
 	UINT incrementSize;
+	//フラグ
+	bool isSpace;
+
 	//深度ビュー用のデスクリプタヒープ
 	ID3D12DescriptorHeap* dsvHeap = nullptr;
 

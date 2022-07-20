@@ -8,7 +8,6 @@
 #include <string>
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
-#define DIRECTINPUT_VERSION			0x0800	//DirectInputのバージョン指定
 
 const float PI = 3.141592f;					//const floatでいい
 
@@ -277,10 +276,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	mesh->Initialize(result, device);
 
 #pragma region キーボード入力設定
-	BYTE preKeys[256];
+	BYTE preKeys[256] = {};
 	BYTE keys[256] = {};
+
+
 #pragma endregion
-	
+
 #pragma endregion
 	// 描画初期化処理　ここまで
 
@@ -312,7 +313,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// 2.描画先の変更
 		// レンダーターゲットビューのハンドルを取得
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-		rtvHandle.ptr += bbIndex * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
+		rtvHandle.ptr += static_cast<unsigned long long>(bbIndex) * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
 		mesh->GetRenderTargetView(commandList, rtvHandle);
 
 		// 3.画面クリア			R	  G		B	A
@@ -320,10 +321,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		//キーボード情報の取得開始
 		keyboard->Acquire();
+
+		for (int i = 0; i < 256; ++i)
+		{
+			preKeys[i] = keys[i];
+		}
+
 		//全キーの入力状態を取得する
 		keyboard->GetDeviceState(sizeof(keys), keys);
 
-		mesh->Update(keys);
+		
+		mesh->Update(keys, preKeys, device);
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
