@@ -1,13 +1,14 @@
-#include <Windows.h>
-#include <d3d12.h>
-#include <dxgi1_6.h>
 #include <cassert>
-#include <dinput.h>
-#include <math.h>
-#include <vector>
-#include <string>
-#include <DirectXMath.h>
+#include <d3d12.h>
 #include <d3dcompiler.h>
+#include <dinput.h>
+#include <DirectXMath.h>
+#include <dxgi1_6.h>
+#include <math.h>
+#include <string>
+#include <vector>
+#include <Windows.h>
+#include <wrl.h>
 
 const float PI = 3.141592f;					//const floatでいい
 
@@ -20,6 +21,7 @@ const float PI = 3.141592f;					//const floatでいい
 #pragma comment(lib,"dxguid.lib")
 
 using namespace DirectX;
+using namespace Microsoft::WRL;
 
 //ウィンドゥプロシージャ
 LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -82,7 +84,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma region デバッグレイヤ
 #ifdef _DEBUG
 //デバッグレイヤーをオンに
-	ID3D12Debug* debugController;
+	ComPtr<ID3D12Debug> debugController;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
 		debugController->EnableDebugLayer();
 	}

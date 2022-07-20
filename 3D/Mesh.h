@@ -55,6 +55,9 @@ struct Object3d
 class Mesh
 {
 public: // メンバ関数
+	//エイリアステンプレート
+	template <class T> using Comptr = Microsoft::WRL::ComPtr<T>;
+
 	Mesh();
 	~Mesh();
 	/// <summary>
