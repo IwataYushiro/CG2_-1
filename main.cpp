@@ -325,7 +325,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		keyboard->GetDeviceState(sizeof(keys), keys);
 
-
+		mesh->Update();
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド

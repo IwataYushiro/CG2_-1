@@ -8,6 +8,7 @@
 #include <DirectXMath.h>
 #include <d3dcompiler.h>
 #include <wrl.h>
+#include <random>
 
 using namespace DirectX;
 
@@ -36,6 +37,11 @@ private:
 	};
 	//3Dƒ}ƒeƒŠƒAƒ‹
 	Material3d material3d_;
+	
+	float red = 0.0f;
+	float green = 0.0f;
+	float blue = 0.0f;
+
 public:
 	Mesh();
 	~Mesh();

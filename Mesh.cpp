@@ -3,7 +3,7 @@
 
 Mesh::Mesh()
 {
-	
+
 }
 
 Mesh::~Mesh()
@@ -13,6 +13,7 @@ Mesh::~Mesh()
 void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 {
 	
+
 	//頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices_));
 
@@ -28,9 +29,9 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.MipLevels = 1;
 	resDesc.SampleDesc.Count = 1;
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-	
+
 	//頂点バッファの生成
-	
+
 	result = device->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
@@ -39,7 +40,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 		nullptr,
 		IID_PPV_ARGS(&vertBuff));
 	assert(SUCCEEDED(result));
-	
+
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
 	//定数バッファ生成
@@ -174,27 +175,27 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	rootParam.Descriptor.ShaderRegister = 0;						//定数バッファ番号
 	rootParam.Descriptor.RegisterSpace = 0;							//デフォルト値
 	rootParam.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;		//全てのシェーダから見える
-	
+
 	// ルートシグネチャの設定
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 	rootSignatureDesc.pParameters = &rootParam;						//ルートパラメータの先頭アドレス
 	rootSignatureDesc.NumParameters = 1;							//ルートパラメータ数
 	// ルートシグネチャのシリアライズ
-	
+
 	result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0,
 		&rootSigBlob, &errorBlob);
 	assert(SUCCEEDED(result));
 	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
 		IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(result));
-	
+
 	// パイプラインにルートシグネチャをセット
 	pipelineDesc.pRootSignature = rootSignature.Get();
 #pragma endregion
 
 #pragma region パイプラインステートの生成
-	
+
 	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
 #pragma endregion
@@ -231,19 +232,45 @@ void Mesh::CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* devic
 	//定数バッファのマッピング
 	result = material->constBuffMaterial->Map(0, nullptr, (void**)&material->constMapMaterial);//マッピング
 	assert(SUCCEEDED(result));
-	//値を書き込むと自動的に転送される
-	material->constMapMaterial->color = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
 
 }
 
 void Mesh::Update()
 {
+	//ランダム
+	//乱数シードを生成
+	std::random_device seed_gen;
+	//メルセンヌ・ツイスターの乱数エンジンを生成
+	std::mt19937_64 engine(seed_gen());
+	//乱数範囲を指定
+	std::uniform_real_distribution<float> dist(0.0f, 0.99f);
+
+	red += 1.0f / 255.0f;
+	if (red >= 1.0f)
+	{
+		red = 1.0f;
+		green += 1.0f / 255.0f;
+	}
+	if (green >= 1.0f)
+	{
+		green = 1.0f / 255.0f;
+		blue +=dist(engine);
+	}
+	if (blue >= 1.0f)
+	{
+		red = 0.0f;
+		green = 0.0f;
+		blue = dist(engine);
+	}
+	
+	//値を書き込むと自動的に転送される
+	material3d_.constMapMaterial->color = XMFLOAT4(red, green, blue, 1.0f);
 
 }
 
 void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 {
-	
+
 	//全頂点に対して
 	for (int i = 0; i < _countof(vertices_); i++)
 	{
