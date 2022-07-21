@@ -1,16 +1,5 @@
 #include <Windows.h>
-#include <d3d12.h>
-#include <dxgi1_6.h>
-#include <cassert>
-#include <dinput.h>
-#include <math.h>
 #include <vector>
-#include <string>
-#include <DirectXMath.h>
-#include <d3dcompiler.h>
-#define DIRECTINPUT_VERSION			0x0800	//DirectInputのバージョン指定
-
-const float PI = 3.141592f;					//const floatでいい
 
 #include "Mesh.h"
 
@@ -20,7 +9,8 @@ const float PI = 3.141592f;					//const floatでいい
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 
-using namespace DirectX;
+const float PI = 3.141592f;					//const floatでいい
+using namespace Microsoft::WRL;
 
 //ウィンドゥプロシージャ
 LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -83,7 +73,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma region デバッグレイヤ
 #ifdef _DEBUG
 //デバッグレイヤーをオンに
-	ID3D12Debug* debugController;
+	ComPtr<ID3D12Debug> debugController;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
 		debugController->EnableDebugLayer();
 	}
@@ -92,13 +82,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 #pragma region DirectX初期化
 	HRESULT result;
-	ID3D12Device* device = nullptr;
-	IDXGIFactory7* dxgiFactory = nullptr;
-	IDXGISwapChain4* swapChain = nullptr;
-	ID3D12CommandAllocator* cmdAllocator = nullptr;
-	ID3D12GraphicsCommandList* commandList = nullptr;
-	ID3D12CommandQueue* commandQueue = nullptr;
-	ID3D12DescriptorHeap* rtvHeap = nullptr;
+	ComPtr<ID3D12Device> device = nullptr;
+	ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
+	ComPtr<IDXGISwapChain4> swapChain = nullptr;
+	ComPtr<ID3D12CommandAllocator> cmdAllocator = nullptr;
+	ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
+	ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr;
 
 #pragma region アダプタの列挙
 	//DXGIファクトリーの生成
@@ -106,9 +96,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	assert(SUCCEEDED(result));
 
 	//アダプター列挙用
-	std::vector<IDXGIAdapter4*> adapters;
+	std::vector<ComPtr<IDXGIAdapter4>> adapters;
 	//ここに特定の名前を持つアダプターオブジェクトが入る
-	IDXGIAdapter4* tmpAdapter = nullptr;
+	ComPtr<IDXGIAdapter4> tmpAdapter = nullptr;
 
 	//パフォーマンスが高いものから順に、全てのアダプターを列挙
 	for (UINT i = 0;
@@ -155,7 +145,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	for (size_t i = 0; i < _countof(levels); i++)
 	{
 		//採用したアダプターでデバイスを生成
-		result = D3D12CreateDevice(tmpAdapter, levels[i],
+		result = D3D12CreateDevice(tmpAdapter.Get(), levels[i],
 			IID_PPV_ARGS(&device));
 		if (result == S_OK) {
 			// デバイスを生成できた時点でループを抜ける
@@ -175,7 +165,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// コマンドリストを生成
 	result = device->CreateCommandList(0,
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		cmdAllocator, nullptr,
+		cmdAllocator.Get(), nullptr,
 		IID_PPV_ARGS(&commandList));
 	assert(SUCCEEDED(result));
 #pragma endregion
@@ -200,9 +190,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // フリップ後は破棄
 	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	// スワップチェーンの生成
+	//IDXGISwapChain1のComPtrを用意
+	ComPtr<IDXGISwapChain1> swapChain1;
 	result = dxgiFactory->CreateSwapChainForHwnd(
-		commandQueue, hwnd, &swapChainDesc, nullptr, nullptr,
-		(IDXGISwapChain1**)&swapChain);
+		commandQueue.Get(),
+		hwnd,
+		&swapChainDesc,
+		nullptr,
+		nullptr,
+		&swapChain1);
+	//生成したIDXGISwapChain1のオブジェクトをIDXGISwapChain4に変換
+	swapChain1.As(&swapChain);
+
 	assert(SUCCEEDED(result));
 #pragma endregion
 
@@ -215,7 +214,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
 
 	// バックバッファ
-	std::vector<ID3D12Resource*> backBuffers;
+	std::vector<ComPtr<ID3D12Resource>> backBuffers;
 	backBuffers.resize(swapChainDesc.BufferCount);
 
 	// スワップチェーンの全てのバッファについて処理する
@@ -232,14 +231,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		// レンダーターゲットビューの生成
-		device->CreateRenderTargetView(backBuffers[i], &rtvDesc, rtvHandle);
+		device->CreateRenderTargetView(backBuffers[i].Get(), &rtvDesc, rtvHandle);
 	}
 
 #pragma endregion
 
 #pragma region フェンス生成
 	// フェンスの生成
-	ID3D12Fence* fence = nullptr;
+	ComPtr<ID3D12Fence> fence = nullptr;
 	UINT64 fenceVal = 0;
 
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
@@ -274,7 +273,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma region 描画初期化処理
 	Mesh* mesh = new Mesh();
 
-	mesh->Initialize(result, device);
+	mesh->Initialize(result, device.Get());
 
 #pragma region キーボード入力設定
 	BYTE preKeys[256];
@@ -299,12 +298,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		}
 
 		// DirectX毎フレーム処理　ここから
-		
+
 		// バックバッファの番号を取得(2つなので0番か1番)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 		// 1.リソースバリアで書き込み可能に変更
 		D3D12_RESOURCE_BARRIER barrierDesc{};
-		barrierDesc.Transition.pResource = backBuffers[bbIndex]; // バックバッファを指定
+		barrierDesc.Transition.pResource = backBuffers[bbIndex].Get(); // バックバッファを指定
 		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
 		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
 		commandList->ResourceBarrier(1, &barrierDesc);
@@ -316,17 +315,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 3.画面クリア			R	  G		B	A
-		
-			FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-			commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-		
-			//キーボード情報の取得開始
-			keyboard->Acquire();
-			//全キーの入力状態を取得する
-			
-			keyboard->GetDeviceState(sizeof(keys), keys);
 
-			
+		FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
+		commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+
+		//キーボード情報の取得開始
+		keyboard->Acquire();
+		//全キーの入力状態を取得する
+
+		keyboard->GetDeviceState(sizeof(keys), keys);
+
+
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
@@ -349,7 +348,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//シザー矩形設定コマンドを、コマンドリストに積む
 		commandList->RSSetScissorRects(1, &scissorRect);
 
-		mesh->Draw(commandList);
+		mesh->Draw(commandList.Get());
 		// 4.描画コマンドここまで
 
 		// 5.リソースバリアを戻す
@@ -363,7 +362,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		result = commandList->Close();
 		assert(SUCCEEDED(result));
 		// コマンドリストの実行
-		ID3D12CommandList* commandLists[] = { commandList };
+		ID3D12CommandList* commandLists[] = { commandList.Get()};
 		commandQueue->ExecuteCommandLists(1, commandLists);
 
 		// 画面に表示するバッファをフリップ(裏表の入替え)
@@ -371,7 +370,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		assert(SUCCEEDED(result));
 
 		//コマンドの実行完了を待つ
-		commandQueue->Signal(fence, ++fenceVal);
+		commandQueue->Signal(fence.Get(), ++fenceVal);
 		if (fence->GetCompletedValue() != fenceVal)
 		{
 			HANDLE event = CreateEvent(nullptr, false, false, nullptr);
@@ -384,7 +383,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		result = cmdAllocator->Reset();
 		assert(SUCCEEDED(result));
 		//再びコマンドリストを貯める準備
-		result = commandList->Reset(cmdAllocator, nullptr);
+		result = commandList->Reset(cmdAllocator.Get(), nullptr);
 		assert(SUCCEEDED(result));
 		// DirectX毎フレーム処理　ここまで
 
@@ -392,6 +391,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//ウィンドゥクラスを登録解除
 	UnregisterClass(w.lpszClassName, w.hInstance);
+	delete mesh;
 	//コンソールへの文字出力
 	OutputDebugStringA("Hello DilectX!!\n");
 

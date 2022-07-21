@@ -1,6 +1,5 @@
 #include "Mesh.h"
-#include <d3dcompiler.h>
-#include <string>
+
 
 Mesh::Mesh()
 {
@@ -31,7 +30,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 	
 	//頂点バッファの生成
-	ID3D12Resource* vertBuff = nullptr;
+	
 	result = device->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
@@ -40,41 +39,11 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 		nullptr,
 		IID_PPV_ARGS(&vertBuff));
 	assert(SUCCEEDED(result));
-	//定数バッファの設定
-	D3D12_HEAP_PROPERTIES cbHeapProp{};		//ヒープ設定
-	cbHeapProp.Type = D3D12_HEAP_TYPE_UPLOAD; //GPUへの転送用
-	//リソース設定
-	D3D12_RESOURCE_DESC cbResourseDesc{};
-	cbResourseDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	cbResourseDesc.Width = (sizeof(ConstBufferDataMaterial) + 0xff) & ~0xff;//256バイトアラインメント
-	cbResourseDesc.Height = 1;
-	cbResourseDesc.DepthOrArraySize = 1;
-	cbResourseDesc.MipLevels = 1;
-	cbResourseDesc.SampleDesc.Count = 1;
-	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-	//定数バッファの生成
-	result = device->CreateCommittedResource(
-		&cbHeapProp,//ヒープ設定
-		D3D12_HEAP_FLAG_NONE,
-		&cbResourseDesc, //リソース設定
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&constBuffMaterial));
-	assert(SUCCEEDED(result));
-
-
-		//定数バッファのマッピング
-	ConstBufferDataMaterial* constMapMaterial = nullptr;
-	result = constBuffMaterial->Map(0, nullptr, (void**)&constMapMaterial);//マッピング
-	assert(SUCCEEDED(result));
-	//値を書き込むと自動的に転送される
-	constMapMaterial->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-
 	
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
-
+	//定数バッファ生成
+	CreateConstBufferMaterial3d(&material3d_, device);
 	//繋がりを解除
 	vertBuff->Unmap(0, nullptr);
 
@@ -86,9 +55,6 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	vdView.StrideInBytes = sizeof(XMFLOAT3);
 
 #pragma region 頂点シェーダー
-	ID3DBlob* vsBlob = nullptr;		//頂点シェーダーオブジェクト
-	ID3DBlob* psBlob = nullptr;		//ピクセルシェーダーオブジェクト
-	ID3DBlob* errorBlob = nullptr;	//エラーオブジェクト
 
 	//頂点シェーダーの読み込みとコンパイル
 	result = D3DCompileFromFile(
@@ -215,16 +181,16 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	rootSignatureDesc.pParameters = &rootParam;						//ルートパラメータの先頭アドレス
 	rootSignatureDesc.NumParameters = 1;							//ルートパラメータ数
 	// ルートシグネチャのシリアライズ
-	ID3DBlob* rootSigBlob = nullptr;
+	
 	result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0,
 		&rootSigBlob, &errorBlob);
 	assert(SUCCEEDED(result));
 	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
 		IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(result));
-	rootSigBlob->Release();
+	
 	// パイプラインにルートシグネチャをセット
-	pipelineDesc.pRootSignature = rootSignature;
+	pipelineDesc.pRootSignature = rootSignature.Get();
 #pragma endregion
 
 #pragma region パイプラインステートの生成
@@ -233,6 +199,41 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	assert(SUCCEEDED(result));
 #pragma endregion
 #pragma endregion
+}
+void Mesh::CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device)
+{
+	HRESULT result;
+
+	//定数バッファの設定
+	D3D12_HEAP_PROPERTIES cbHeapProp{};		//ヒープ設定
+	cbHeapProp.Type = D3D12_HEAP_TYPE_UPLOAD; //GPUへの転送用
+	//リソース設定
+	D3D12_RESOURCE_DESC cbResourseDesc{};
+	cbResourseDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+	cbResourseDesc.Width = (sizeof(ConstBufferDataMaterial) + 0xff) & ~0xff;//256バイトアラインメント
+	cbResourseDesc.Height = 1;
+	cbResourseDesc.DepthOrArraySize = 1;
+	cbResourseDesc.MipLevels = 1;
+	cbResourseDesc.SampleDesc.Count = 1;
+	cbResourseDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+
+	//定数バッファの生成
+	result = device->CreateCommittedResource(
+		&cbHeapProp,//ヒープ設定
+		D3D12_HEAP_FLAG_NONE,
+		&cbResourseDesc, //リソース設定
+		D3D12_RESOURCE_STATE_GENERIC_READ,
+		nullptr,
+		IID_PPV_ARGS(&material->constBuffMaterial));
+	assert(SUCCEEDED(result));
+
+
+	//定数バッファのマッピング
+	result = material->constBuffMaterial->Map(0, nullptr, (void**)&material->constMapMaterial);//マッピング
+	assert(SUCCEEDED(result));
+	//値を書き込むと自動的に転送される
+	material->constMapMaterial->color = XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f);
+
 }
 
 void Mesh::Update()
@@ -250,13 +251,13 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	}
 
 	//パイプラインステートとルートシグネチャの設定コマンド
-	commandList->SetPipelineState(pipelineState);
-	commandList->SetGraphicsRootSignature(rootSignature);
+	commandList->SetPipelineState(pipelineState.Get());
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
 
 	// 頂点バッファビューの設定コマンド
 	commandList->IASetVertexBuffers(0, 1, &vdView);
 	//定数バッファビュー(CBV)の設定コマンド
-	commandList->SetGraphicsRootConstantBufferView(0, constBuffMaterial->GetGPUVirtualAddress());
+	commandList->SetGraphicsRootConstantBufferView(0, material3d_.constBuffMaterial->GetGPUVirtualAddress());
 	//描画コマンド
 	commandList->DrawInstanced(_countof(vertices_), 1, 0, 0);	//全ての頂点を使って描画
 }
