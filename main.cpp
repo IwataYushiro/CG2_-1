@@ -1,18 +1,11 @@
-#include <cassert>
-#include <d3d12.h>
-#include <d3dcompiler.h>
-#include <dinput.h>
-#include <DirectXMath.h>
-#include <dxgi1_6.h>
-#include <math.h>
-#include <string>
+#include "Mesh.h"
+
 #include <vector>
 #include <Windows.h>
-#include <wrl.h>
+
 
 const float PI = 3.141592f;					//const floatでいい
 
-#include "Mesh.h"
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
@@ -227,7 +220,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
 
 	// バックバッファ
-	std::vector<ID3D12Resource*> backBuffers;
+	std::vector<ComPtr<ID3D12Resource>> backBuffers;
 	backBuffers.resize(swapChainDesc.BufferCount);
 
 	// スワップチェーンの全てのバッファについて処理する
@@ -244,14 +237,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 		// レンダーターゲットビューの生成
-		device->CreateRenderTargetView(backBuffers[i], &rtvDesc, rtvHandle);
+		device->CreateRenderTargetView(backBuffers[i].Get(), &rtvDesc, rtvHandle);
 	}
 
 #pragma endregion
 
 #pragma region フェンス生成
 	// フェンスの生成
-	ID3D12Fence* fence = nullptr;
+	ComPtr<ID3D12Fence> fence = nullptr;
 	UINT64 fenceVal = 0;
 
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
@@ -318,7 +311,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 		// 1.リソースバリアで書き込み可能に変更
 		D3D12_RESOURCE_BARRIER barrierDesc{};
-		barrierDesc.Transition.pResource = backBuffers[bbIndex]; // バックバッファを指定
+		barrierDesc.Transition.pResource = backBuffers[bbIndex].Get(); // バックバッファを指定
 		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
 		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
 		commandList->ResourceBarrier(1, &barrierDesc);
@@ -389,7 +382,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		assert(SUCCEEDED(result));
 
 		//コマンドの実行完了を待つ
-		commandQueue->Signal(fence, ++fenceVal);
+		commandQueue->Signal(fence.Get(), ++fenceVal);
 		if (fence->GetCompletedValue() != fenceVal)
 		{
 			HANDLE event = CreateEvent(nullptr, false, false, nullptr);
@@ -410,6 +403,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//ウィンドゥクラスを登録解除
 	UnregisterClass(w.lpszClassName, w.hInstance);
+	delete mesh;
 	//コンソールへの文字出力
 	OutputDebugStringA("Hello DilectX!!\n");
 

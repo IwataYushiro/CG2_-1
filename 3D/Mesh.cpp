@@ -1,8 +1,5 @@
 #include "Mesh.h"
-#include <d3dcompiler.h>
-#include <string>
-#include <math.h>
-#include <DirectXTex.h>
+
 
 Mesh::Mesh()
 {
@@ -56,7 +53,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	//頂点バッファの生成
-	ComPtr<ID3D12Resource> vertBuff = nullptr;
+	
 	result = device->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
@@ -78,7 +75,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	//インデックスバッファの生成
-	ComPtr<ID3D12Resource> indexBuff = nullptr;
+	
 	result = device->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
@@ -181,7 +178,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	textureResourceDesc.SampleDesc.Count = 1;
 
 	//テクスチャバッファの生成
-	ComPtr<ID3D12Resource> texbuff = nullptr;
+	
 	result = device->CreateCommittedResource(
 		&textureHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -244,7 +241,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	textureResourceDesc2.SampleDesc.Count = 1;
 
 	//テクスチャバッファの生成
-	ComPtr<ID3D12Resource> texbuff2 = nullptr;
+
 	result = device->CreateCommittedResource(
 		&textureHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -333,7 +330,6 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
 
 	//深度バッファ生成
-	ComPtr<ID3D12Resource> depthBuff = nullptr;
 	result = device->CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -380,9 +376,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	);
 
 #pragma region 頂点シェーダー
-	ComPtr<ID3DBlob> vsBlob = nullptr;		//頂点シェーダーオブジェクト
-	ComPtr<ID3DBlob> psBlob = nullptr;		//ピクセルシェーダーオブジェクト
-	ComPtr<ID3DBlob> errorBlob = nullptr;	//エラーオブジェクト
+	
 				   
 	//頂点シェーダーの読み込みとコンパイル
 	result = D3DCompileFromFile(
@@ -568,8 +562,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	rootSignatureDesc.pStaticSamplers = &samplerDesc;
 	rootSignatureDesc.NumStaticSamplers = 1;
 
-	// ルートシグネチャのシリアライズ
-	ComPtr<ID3DBlob> rootSigBlob = nullptr;
+	
 	result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0,
 		&rootSigBlob, &errorBlob);
 	assert(SUCCEEDED(result));
@@ -676,127 +669,6 @@ void Mesh::SetObject3ds(int num)
 
 		//親オブジェクトに対してZ軸方向に-8.0fずらす
 		object3ds_[num].position = { randPosX,randPosY,randPosZ };
-	}
-}
-
-void Mesh::CreateTextureBuffer(ID3D12Device* device, D3D12_RESOURCE_DESC resDesc)
-{
-	HRESULT result;
-
-	for (int i = 0; i < textureCount; i++)
-	{
-		TexMetadata* metadata{};
-		ScratchImage* scratchImg{};
-		//WICテクスチャのロード
-		if (i == 0)
-		{
-			result = LoadFromWICFile(
-				L"Resources/texture.png",	//Resourcesフォルダのtexture.png
-				WIC_FLAGS_NONE,
-				&metadata[0], scratchImg[0]);
-		}
-		else if (i == 1)
-		{
-			result = LoadFromWICFile(
-				L"Resources/reimu.png",	//Resourcesフォルダのtexture.png
-				WIC_FLAGS_NONE,
-				&metadata[1], scratchImg[1]);
-		}
-
-		assert(SUCCEEDED(result));
-
-		ScratchImage* mipChain{};
-		//ミップマップ生成
-		result = GenerateMipMaps(
-			scratchImg[i].GetImages(), scratchImg[i].GetImageCount(), scratchImg[i].GetMetadata(),
-			TEX_FILTER_DEFAULT, 0, mipChain[i]);
-		if (SUCCEEDED(result))
-		{
-			scratchImg[i] = std::move(mipChain[i]);
-			metadata[i] = scratchImg[i].GetMetadata();
-		}
-		//読み込んだディフューズテクスチャをSRGBとして扱う
-		metadata[i].format = MakeSRGB(metadata[i].format);
-
-		//テクスチャバッファ設定
-
-		// ヒープ設定
-		D3D12_HEAP_PROPERTIES textureHeapProp{};
-		textureHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
-		textureHeapProp.CPUPageProperty =
-			D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-		textureHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
-
-		//リソース設定
-		D3D12_RESOURCE_DESC* textureResourceDesc{};
-		textureResourceDesc[i].Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-		textureResourceDesc[i].Format = metadata[i].format;
-		textureResourceDesc[i].Width = metadata[i].width;							//幅
-		textureResourceDesc[i].Height = (UINT16)metadata[i].height;				//高さ
-		textureResourceDesc[i].DepthOrArraySize = (UINT16)metadata[i].arraySize;
-		textureResourceDesc[i].MipLevels = (UINT16)metadata[i].mipLevels;
-		textureResourceDesc[i].SampleDesc.Count = 1;
-
-		//テクスチャバッファの生成
-		ID3D12Resource** texbuff = nullptr;
-		result = device->CreateCommittedResource(
-			&textureHeapProp,
-			D3D12_HEAP_FLAG_NONE,
-			&textureResourceDesc[i],
-			D3D12_RESOURCE_STATE_GENERIC_READ,
-			nullptr,
-			IID_PPV_ARGS(&texbuff[i]));
-		assert(SUCCEEDED(result));
-
-		//全ミップマップについて
-		for (size_t j = 0; j < metadata[i].mipLevels; j++)
-		{
-			//ミップマップレベルを指定してイメージを取得
-			const Image* img = scratchImg[i].GetImage(j, 0, 0);
-			//テクスチャバッファにデータ転送
-			result = texbuff[j]->WriteToSubresource(
-				(UINT)j,
-				nullptr,							//全領域へコピー
-				img->pixels,						//元データアドレス
-				(UINT)img->rowPitch,				//1ラインサイズ
-				(UINT)img->slicePitch				//1枚サイズ
-			);
-			assert(SUCCEEDED(result));
-		}
-
-
-		//SRVの最大個数
-		const size_t kMaxSRVCount = 2056;
-
-		//デスクリプタヒープ設定
-		D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
-		srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-		srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;//シェーダーから見えるように
-		srvHeapDesc.NumDescriptors = kMaxSRVCount;
-
-		//設定をもとにSRV用デスクリプタヒープを生成
-		result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
-		assert(SUCCEEDED(result));
-
-		//SRVヒープの戦闘ハンドルを取得
-		D3D12_CPU_DESCRIPTOR_HANDLE srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
-		if (i != textureCount - 1)
-		{
-			//1つハンドルを進める
-			incrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			srvHandle.ptr += incrementSize;
-		}
-
-		//シェーダーリソースビュー設定
-		D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc{};				//設定構造体
-		srvDesc[i].Format = textureResourceDesc[i].Format;
-		srvDesc[i].Shader4ComponentMapping =
-			D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc[i].ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;	//2Dテクスチャ
-		srvDesc[i].Texture2D.MipLevels = textureResourceDesc[i].MipLevels;
-
-		//ハンドルの指す位置にシェーダーリソースビュー作成
-		device->CreateShaderResourceView(texbuff[i], &srvDesc[i], srvHandle);
 	}
 }
 

@@ -7,6 +7,10 @@
 #include <DirectXMath.h>
 #include <random>
 #include <wrl.h>
+#include <d3dcompiler.h>
+#include <string>
+#include <math.h>
+#include <DirectXTex.h>
 
 using namespace DirectX;
 
@@ -31,7 +35,7 @@ private:
 	struct Material3d
 	{
 		//定数バッファのGPUリソースのポインタ
-		ID3D12Resource* constBuffMaterial = nullptr;
+		ComPtr<ID3D12Resource> constBuffMaterial = nullptr;
 
 		//構造体を変数化
 		ConstBufferDataMaterial* cbdm = nullptr;
@@ -44,7 +48,7 @@ private:
 	struct Object3d
 	{
 		//定数バッファ(行列用)
-		ID3D12Resource* constBuffTransform = nullptr;
+		ComPtr<ID3D12Resource> constBuffTransform = nullptr;
 		//構造体を変数化
 		ConstBufferDataTransform* cbdt = nullptr;
 		//定数バッファマップ(行列用)
@@ -160,6 +164,8 @@ private://メンバ変数
 		{{ 5.0f , 5.0f ,-5.0f},{},{1.0f,1.0f}},//右下					
 		{{ 5.0f , 5.0f , 5.0f},{}, {1.0f,0.0f}},//右上
 	};
+	//頂点バッファの生成
+	ComPtr<ID3D12Resource> vertBuff = nullptr;
 
 	//インデックスデータ
 	unsigned short indices[indicesCount_] =
@@ -189,6 +195,8 @@ private://メンバ変数
 		22,21,23,//三角形12つ目
 
 	};
+	//インデックスバッファの生成
+	ComPtr<ID3D12Resource> indexBuff = nullptr;
 
 	//射影変換行列
 	XMMATRIX matprojection;
@@ -208,26 +216,40 @@ private://メンバ変数
 	//インデックスバッファビューの作成
 	D3D12_INDEX_BUFFER_VIEW idView{};
 
+	//テクスチャバッファの生成
+	ComPtr<ID3D12Resource> texbuff = nullptr;
+	ComPtr<ID3D12Resource> texbuff2 = nullptr;
+
 	//テクスチャバッファを進める用
 	D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
 	D3D12_GPU_DESCRIPTOR_HANDLE srvGpuHandle;
 
 	static const int textureCount = 2;
 	UINT incrementSize;
-	//フラグ
+	//スペースキーを押したかのフラグ
 	bool isSpace;
+
+	//シェーダー関係
+	ComPtr<ID3DBlob> vsBlob = nullptr;		//頂点シェーダーオブジェクト
+	ComPtr<ID3DBlob> psBlob = nullptr;		//ピクセルシェーダーオブジェクト
+	ComPtr<ID3DBlob> errorBlob = nullptr;	//エラーオブジェクト
+
+	//深度バッファ生成
+	ComPtr<ID3D12Resource> depthBuff = nullptr;
 
 	//深度ビュー用のデスクリプタヒープを生成
 	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
 
 	//設定をもとにSRV用デスクリプタヒープを生成
-	ComPtr<ID3D12DescriptorHeap> srvHeap = nullptr;
+	ID3D12DescriptorHeap* srvHeap = nullptr;
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	Vertex* vertMap = nullptr;
 
 	//ルートシグネチャ
 	ComPtr<ID3D12RootSignature> rootSignature;
+	// ルートシグネチャのシリアライズ
+	ComPtr<ID3DBlob> rootSigBlob = nullptr;
 
 	//パイプラインステートの生成
 	ComPtr<ID3D12PipelineState> pipelineState = nullptr;
