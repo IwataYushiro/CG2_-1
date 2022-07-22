@@ -276,7 +276,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	mesh->Initialize(result, device.Get());
 
 #pragma region キーボード入力設定
-	BYTE preKeys[256];
+	BYTE preKeys[256] = {};
 	BYTE keys[256] = {};
 #pragma endregion
 
@@ -311,7 +311,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// 2.描画先の変更
 		// レンダーターゲットビューのハンドルを取得
 		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-		rtvHandle.ptr += bbIndex * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
+		rtvHandle.ptr += static_cast<unsigned long long>(bbIndex) * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
 		commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr);
 
 		// 3.画面クリア			R	  G		B	A
@@ -321,11 +321,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 		//キーボード情報の取得開始
 		keyboard->Acquire();
+
+		for (int i = 0; i < 256; ++i)
+		{
+			preKeys[i] = keys[i];
+		}
 		//全キーの入力状態を取得する
 
 		keyboard->GetDeviceState(sizeof(keys), keys);
 
-		mesh->Update();
+		mesh->Update(keys, preKeys, device.Get());
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
