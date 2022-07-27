@@ -788,10 +788,10 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 	//定数バッファビュー(CBV)の設定コマンド
 	commandList->SetGraphicsRootConstantBufferView(0, material3d_.constBuffMaterial->GetGPUVirtualAddress());
 	//SRVヒープの設定コマンド
-	commandList->SetDescriptorHeaps(1, &srvHeap);
+	ID3D12DescriptorHeap* srvHeaps[] = { srvHeap.Get() };
+	commandList->SetDescriptorHeaps(_countof(srvHeaps), srvHeaps);
 	// SRVヒープの先頭ハンドルを取得(SRVを指しているはず)
-	srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
-	srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
+	
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 	//全オブジェクト描画
