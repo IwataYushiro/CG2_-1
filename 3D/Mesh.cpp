@@ -274,14 +274,15 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 	//デスクリプタヒープ設定
 	D3D12_DESCRIPTOR_HEAP_DESC srvHeapDesc = {};
 	srvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;//シェーダーから見えるように
 	srvHeapDesc.NumDescriptors = kMaxSRVCount;
+	srvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;//シェーダーから見えるように
+	
 
 	//設定をもとにSRV用デスクリプタヒープを生成
 	result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
 	assert(SUCCEEDED(result));
 
-	//SRVヒープの戦闘ハンドルを取得
+	//SRVヒープのハンドルを取得
 	srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
 	srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
 
@@ -783,16 +784,14 @@ void Mesh::Draw(ID3D12GraphicsCommandList* commandList)
 
 	//プリミティブ形状の設定コマンド
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	//リストかストリップか
-	// 頂点バッファビューの設定コマンド
-	commandList->IASetVertexBuffers(0, 1, &vdView);
-	// インデックスバッファビューの設定コマンド
-	commandList->IASetIndexBuffer(&idView);
+	
 	//定数バッファビュー(CBV)の設定コマンド
 	commandList->SetGraphicsRootConstantBufferView(0, material3d_.constBuffMaterial->GetGPUVirtualAddress());
 	//SRVヒープの設定コマンド
 	commandList->SetDescriptorHeaps(1, &srvHeap);
 	// SRVヒープの先頭ハンドルを取得(SRVを指しているはず)
-	
+	srvHandle = srvHeap->GetCPUDescriptorHandleForHeapStart();
+	srvGpuHandle = srvHeap->GetGPUDescriptorHandleForHeapStart();
 	// SRVヒープの先頭にあるSRVをルートパラメータ1番に設定
 	commandList->SetGraphicsRootDescriptorTable(1, srvGpuHandle);
 	//全オブジェクト描画

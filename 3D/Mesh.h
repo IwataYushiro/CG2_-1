@@ -241,7 +241,7 @@ private://メンバ変数
 	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
 
 	//設定をもとにSRV用デスクリプタヒープを生成
-	ID3D12DescriptorHeap* srvHeap = nullptr;
+	ComPtr<ID3D12DescriptorHeap> srvHeap;
 
 	//GPU上のバッファに対応した仮想メモリ(メインメモリ上)を取得
 	Vertex* vertMap = nullptr;
