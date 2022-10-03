@@ -19,6 +19,9 @@
     <Filter Include="ソース ファイル\3D">
       <UniqueIdentifier>{b4f11c48-06da-4500-8cd2-6f8395662936}</UniqueIdentifier>
     </Filter>
+    <Filter Include="シェーダー ファイル">
+      <UniqueIdentifier>{24f0b882-25f2-4b93-927b-58748213ae3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="3D\Mesh.cpp">
@@ -29,15 +32,21 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="BasicVS.hlsl" />
-    <FxCompile Include="BasicPS.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Basic.hlsli" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="3D\Mesh.h">
       <Filter>ヘッダー ファイル\3D</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\CG2\ウィンドゥ表示\Resources\shader\Basic.hlsli">
+      <Filter>シェーダー ファイル</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\..\CG2\ウィンドゥ表示\Resources\shader\BasicPS.hlsl">
+      <Filter>シェーダー ファイル</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\CG2\ウィンドゥ表示\Resources\shader\BasicVS.hlsl">
+      <Filter>シェーダー ファイル</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

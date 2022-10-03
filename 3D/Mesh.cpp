@@ -381,7 +381,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 				   
 	//頂点シェーダーの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"BasicVS.hlsl",								//シェーダーファイル名
+		L"Resources/shader/BasicVS.hlsl",								//シェーダーファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//インクルード可能にする
 		"main", "vs_5_0",								//エントリーポイント名、シェーダーモデル指定
@@ -409,7 +409,7 @@ void Mesh::Initialize(HRESULT result, ID3D12Device* device)
 #pragma region ピクセルシェーダー
 	//ピクセルシェーダーの読み込みとコンパイル
 	result = D3DCompileFromFile(
-		L"BasicPS.hlsl",								//シェーダーファイル名
+		L"Resources/shader/BasicPS.hlsl",								//シェーダーファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,				//インクルード可能にする
 		"main", "ps_5_0",								//エントリーポイント名、シェーダーモデル指定
