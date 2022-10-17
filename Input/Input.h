@@ -14,17 +14,11 @@ public:
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 public:
-	Input();
-	~Input();
-	
-	///<summary>
+
 	//初期化
-	///<summary>
 	void Initialize(HINSTANCE hInstance, HWND hwnd);
-	
-	///<summary>
+
 	//更新
-	///<summary>
 	void Update();
 
 	///<summary>
@@ -35,19 +29,14 @@ public:
 	bool PushKey(BYTE keyNumber);
 
 private://メンバ変数
+
+	//DirectInputの初期化
+	ComPtr<IDirectInput8> directInput = nullptr;
 	//キーボード
 	ComPtr <IDirectInputDevice8> keyboard = nullptr;
-	
+
 	//全キーの状態
 	BYTE preKeys[256] = {};
 	BYTE keys[256] = {};
 
 };
-
-Input::Input()
-{
-}
-
-Input::~Input()
-{
-}

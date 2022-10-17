@@ -70,7 +70,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(HRESULT result, ID3D12Device* device);
+	void Initialize(HINSTANCE hInstance, HWND hwnd, ID3D12Device* device);
 	
 	//定数バッファの設定
 	void CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device);
@@ -90,9 +90,9 @@ public:
 	//画面クリア設定
 	void ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
 
-	void Update(BYTE* keys, BYTE* preKeys, ID3D12Device* device);
+	void Update(ID3D12Device* device);
 	void UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection);
-	void ControlObject3d(Object3d* object, BYTE* keys);
+	void ControlObject3d(Object3d* object);
 	/// <summary>
 	/// 描画
 	/// </summary>
@@ -100,7 +100,10 @@ public:
 	//複数オブジェクト描画用
 	void DrawObject3d(Object3d* object,ID3D12GraphicsCommandList* commandList,
 		D3D12_VERTEX_BUFFER_VIEW& vdView,D3D12_INDEX_BUFFER_VIEW& idView,UINT numIndices);
+
 private://メンバ変数
+	//インプット
+	Input* input_ = nullptr;
 
 	//頂点数
 	static const size_t VerticesCount_ = 24;

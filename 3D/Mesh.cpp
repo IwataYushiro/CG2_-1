@@ -3,15 +3,22 @@
 
 Mesh::Mesh()
 {
-
+	
 }
 
 Mesh::~Mesh()
 {
+	delete input_;
 }
 
-void Mesh::Initialize(HRESULT result, ID3D12Device* device)
+void Mesh::Initialize(HINSTANCE hInstance, HWND hwnd,ID3D12Device* device)
 {
+	HRESULT result;
+	
+	//シングルトンインスタンスを取得
+	input_ = new Input();
+	input_->Initialize(hInstance, hwnd);
+
 #pragma region 描画初期化処理
 	for (int i = 0; i < VerticesCount_; i++)
 	{
@@ -690,13 +697,16 @@ void Mesh::ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIP
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 }
 
-void Mesh::Update(BYTE* keys, BYTE* preKeys, ID3D12Device* device)
+void Mesh::Update(ID3D12Device* device)
 {
+
+	input_->Update();
+
 	//視点を操作
-	if (keys[DIK_D] || keys[DIK_A])
+	if (input_->PushKey(DIK_D) || input_->PushKey(DIK_A))
 	{
-		if (keys[DIK_D]) { angle += XMConvertToRadians(1.0f); }
-		else if (keys[DIK_A]) { angle -= XMConvertToRadians(1.0f); }
+		if (input_->PushKey(DIK_D)) { angle += XMConvertToRadians(1.0f); }
+		else if (input_->PushKey(DIK_A)) { angle -= XMConvertToRadians(1.0f); }
 
 		//angleラジアンだけy軸周りに回転、半径は-100
 		eye.x = -100.0f * sinf(angle);
@@ -704,7 +714,7 @@ void Mesh::Update(BYTE* keys, BYTE* preKeys, ID3D12Device* device)
 
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
-	if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+	/*if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
 	{
 		if (!isSpace)
 		{
@@ -719,13 +729,13 @@ void Mesh::Update(BYTE* keys, BYTE* preKeys, ID3D12Device* device)
 			srvGpuHandle.ptr -= incrementSize;
 		}
 
-	}
+	}*/
 	for (int i = 0; i < _countof(object3ds_); i++)
 	{
 		UpdateObject3d(&object3ds_[i], matview, matprojection);
 	}
 	//操作
-	ControlObject3d(&object3ds_[0], keys);
+	ControlObject3d(&object3ds_[0]);
 }
 
 void Mesh::UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection)
@@ -759,14 +769,14 @@ void Mesh::UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matproj
 }
 
 //操作
-void Mesh::ControlObject3d(Object3d* object, BYTE* keys)
+void Mesh::ControlObject3d(Object3d* object)
 {
-	if (keys[DIK_UP] || keys[DIK_DOWN] || keys[DIK_RIGHT] || keys[DIK_LEFT])
+	if (input_->PushKey(DIK_UP)|| input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_LEFT))
 	{
-		if (keys[DIK_UP]) { object->position.y += 1.0f; }
-		else if (keys[DIK_DOWN]) { object->position.y -= 1.0f; }
-		if (keys[DIK_RIGHT]) { object->position.x += 1.0f; }
-		else if (keys[DIK_LEFT]) { object->position.x -= 1.0f; }
+		if (input_->PushKey(DIK_UP)) { object->position.y += 1.0f; }
+		else if (input_->PushKey(DIK_DOWN)) { object->position.y -= 1.0f; }
+		if (input_->PushKey(DIK_RIGHT)) { object->position.x += 1.0f; }
+		else if (input_->PushKey(DIK_LEFT)) { object->position.x -= 1.0f; }
 	}
 }
 

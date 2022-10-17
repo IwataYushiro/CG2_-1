@@ -36,7 +36,7 @@ LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #pragma region ポインタ置き場
-	
+
 #pragma endregion
 
 #pragma region Windows初期化
@@ -73,7 +73,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//ウィンドゥを表示状態にする
 	ShowWindow(hwnd, SW_SHOW);
-	
+
 	MSG msg{}; //メッセージ
 #pragma endregion
 	// DirectX初期化処理　ここから
@@ -207,7 +207,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		nullptr,
 		nullptr,
 		&swapChain1);
-	
+
 	//生成したIDXGISwapChain1のオブジェクトをIDXGISwapChain4に変換
 	swapChain1.As(&swapChain);
 
@@ -258,11 +258,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
-	Mesh* mesh = new Mesh();
-	Input* input = new Input();
 
-	mesh->Initialize(result, device.Get());
+	Input* input = new Input();
+	Mesh* mesh = new Mesh();
+
 	input->Initialize(w.hInstance, hwnd);
+	mesh->Initialize(w.hInstance, hwnd, device.Get());
+
 
 #pragma endregion
 	// 描画初期化処理　ここまで
@@ -301,7 +303,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// 3.画面クリア			R	  G		B	A
 		mesh->ClearScreen(commandList.Get(), rtvHandle);
 
-		mesh->Update(keys, preKeys, device.Get());
+		mesh->Update(device.Get());
 
 		// 4.描画コマンドここから
 		//ビューポート設定コマンド
@@ -338,7 +340,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		result = commandList->Close();
 		assert(SUCCEEDED(result));
 		// コマンドリストの実行
-		ID3D12CommandList* commandLists[] = { commandList.Get()};
+		ID3D12CommandList* commandLists[] = { commandList.Get() };
 		commandQueue->ExecuteCommandLists(1, commandLists);
 
 		// 画面に表示するバッファをフリップ(裏表の入替え)
