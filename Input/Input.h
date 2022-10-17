@@ -1,10 +1,5 @@
 #pragma once
-#define DIRECTINPUT_VERSION		0x0800		//DirectInputのバージョン指定
-#include <cassert>
-#include <dinput.h>
-#include <wrl.h>
-
-using namespace Microsoft::WRL;
+#include <Windows.h>
 
 //入力
 class Input
@@ -14,7 +9,7 @@ public:
 	~Input();
 	
 	//初期化
-	void Initialize();
+	void Initialize(HINSTANCE hInstance, HWND hwnd);
 	
 	//更新
 	void Update();

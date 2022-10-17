@@ -1,19 +1,33 @@
 #include "Input.h"
 
+#define DIRECTINPUT_VERSION		0x0800		//DirectInputのバージョン指定
+
+#include <cassert>
+#include <dinput.h>
+#include <wrl.h>
+
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
+
+using namespace Microsoft::WRL;
+
+
 
 //初期化
-void Input::Initialize()
+void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
+	HRESULT result;
+
 #pragma	region DirectInputの初期化
 	//DirectInputの初期化
-	IDirectInput8* directInput = nullptr;
+	ComPtr<IDirectInput8> directInput = nullptr;
 	result = DirectInput8Create(
-		w.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+		hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
 		(void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
 	//キーボードデバイスの生成
-	IDirectInputDevice8* keyboard = nullptr;
+	ComPtr < IDirectInputDevice8> keyboard = nullptr;
 	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
 	assert(SUCCEEDED(result));
 

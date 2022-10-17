@@ -11,8 +11,6 @@ const float PI = 3.141592f;					//const floatでいい
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"d3dcompiler.lib")
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
@@ -264,7 +262,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	Input* input = new Input();
 
 	mesh->Initialize(result, device.Get());
-	input->Initialize();
+	input->Initialize(w.hInstance, hwnd);
 
 #pragma region キーボード入力設定
 	BYTE preKeys[256] = {};
