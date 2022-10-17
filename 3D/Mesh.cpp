@@ -714,7 +714,7 @@ void Mesh::Update(ID3D12Device* device)
 
 		matview = XMMatrixLookAtLH(XMLoadFloat3(&eye), XMLoadFloat3(&target), XMLoadFloat3(&up));
 	}
-	/*if (keys[DIK_SPACE] && !preKeys[DIK_SPACE])
+	if (input_->TriggerKey(DIK_SPACE))
 	{
 		if (!isSpace)
 		{
@@ -729,7 +729,7 @@ void Mesh::Update(ID3D12Device* device)
 			srvGpuHandle.ptr -= incrementSize;
 		}
 
-	}*/
+	}
 	for (int i = 0; i < _countof(object3ds_); i++)
 	{
 		UpdateObject3d(&object3ds_[i], matview, matprojection);

@@ -22,12 +22,18 @@ public:
 	void Update();
 
 	///<summary>
-	///キーが押されているか
+	///キーが押されているか(プレス)
 	///<summary>
 	/// <param name="keyNumber">キー番号(DIK_0等)</param>
 	/// <returns>押されているか</returns>
 	bool PushKey(BYTE keyNumber);
-
+	///<summary>
+	///キーが押されているか(トリガー)
+	///<summary>
+	/// <param name="keyNumber">キー番号(DIK_0等)</param>
+	/// <returns>押されているか</returns>
+	bool TriggerKey(BYTE keyNumber);
+	
 private://メンバ変数
 
 	//DirectInputの初期化
