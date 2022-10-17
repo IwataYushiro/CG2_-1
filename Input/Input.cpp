@@ -1,15 +1,12 @@
 #include "Input.h"
-
 #include <cassert>
 
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
 
-using namespace Microsoft::WRL;
-
-
-
+///<summary>
 //初期化
+///<summary>
 void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
 	HRESULT result;
@@ -37,16 +34,16 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 #pragma endregion
 }
 
+///<summary>
 //更新
+///<summary>
 void Input::Update()
 {
 	//キーボード情報の取得開始
 	keyboard->Acquire();
 
 	//全キーの入力状態を取得する
-	BYTE preKeys[256] = {};
-	BYTE keys[256] = {};
-
+	
 	for (int i = 0; i < 256; ++i)
 	{
 		preKeys[i] = keys[i];
@@ -54,4 +51,17 @@ void Input::Update()
 
 	keyboard->GetDeviceState(sizeof(keys), keys);
 
+}
+///<summary>
+///キーが押されているか
+///<summary>
+bool Input::PushKey(BYTE keyNumber) {
+
+	//指定キーを押していればtrue
+	if (keys[keyNumber])
+	{
+		return true;
+	}
+	//そうでなければfalse
+	return false;
 }

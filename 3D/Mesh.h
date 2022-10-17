@@ -5,6 +5,7 @@
 #include <cassert>
 #include <dinput.h>
 #include <DirectXMath.h>
+#include <Input.h>
 #include <random>
 #include <wrl.h>
 #include <d3dcompiler.h>
