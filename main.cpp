@@ -1,4 +1,5 @@
 #include "Mesh.h"
+#include "Input.h"
 
 #include <vector>
 #include <Windows.h>
@@ -36,6 +37,10 @@ LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
+#pragma region ポインタ置き場
+	
+#pragma endregion
+
 #pragma region Windows初期化
 	//ウィンドゥサイズ
 	const int window_width = 1280; //横幅
@@ -250,36 +255,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 #pragma endregion
 
-#pragma	region DirectInputの初期化
-	//DirectInputの初期化
-	IDirectInput8* directInput = nullptr;
-	result = DirectInput8Create(
-		w.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
-		(void**)&directInput, nullptr);
-	assert(SUCCEEDED(result));
-
-	//キーボードデバイスの生成
-	IDirectInputDevice8* keyboard = nullptr;
-	result = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
-	assert(SUCCEEDED(result));
-
-	//入力データ形式のセット
-	result = keyboard->SetDataFormat(&c_dfDIKeyboard); //標準形式
-	assert(SUCCEEDED(result));
-
-	//排他制御レベルのセット
-	result = keyboard->SetCooperativeLevel(
-		hwnd, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
-	assert(SUCCEEDED(result));
-#pragma endregion
 #pragma endregion
 	// DirectX初期化処理　ここまで
 
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
 	Mesh* mesh = new Mesh();
+	Input* input = new Input();
 
 	mesh->Initialize(result, device.Get());
+	input->Initialize();
 
 #pragma region キーボード入力設定
 	BYTE preKeys[256] = {};
@@ -403,7 +388,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	//ウィンドゥクラスを登録解除
 	UnregisterClass(w.lpszClassName, w.hInstance);
+	//解放
 	delete mesh;
+	delete input;
 	//コンソールへの文字出力
 	OutputDebugStringA("Hello DilectX!!\n");
 
