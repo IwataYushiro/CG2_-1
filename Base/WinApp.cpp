@@ -19,9 +19,6 @@ LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 //初期化
 void WinApp::Initialize() {
-	//ウィンドゥサイズ
-	const int window_width = 1280; //横幅
-	const int window_height = 720; //縦幅
 
 	//ウィンドゥクラスの設定
 	WNDCLASSEX w{};

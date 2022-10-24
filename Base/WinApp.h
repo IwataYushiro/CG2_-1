@@ -4,6 +4,9 @@
 class WinApp
 {
 public://定数
+	//ウィンドゥサイズ
+	static const int window_width = 1280; //横幅
+	static const int window_height = 720; //縦幅
 
 public://メンバ関数
 	WinApp();
