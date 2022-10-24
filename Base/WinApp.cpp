@@ -39,7 +39,7 @@ void WinApp::Initialize() {
 	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
 
 	//ウィンドゥ作成
-	HWND hwnd = CreateWindow(w.lpszClassName,   //クラス名
+	hwnd = CreateWindow(w.lpszClassName,   //クラス名
 		L"DirectXGame",							//タイトルバーの文字
 		WS_OVERLAPPEDWINDOW,					//標準的なウィンドウスタイル
 		CW_USEDEFAULT,							//表示X座標(OSに任せる)

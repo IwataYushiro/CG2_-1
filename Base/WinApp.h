@@ -3,9 +3,12 @@
 
 class WinApp
 {
-public:
+public://定数
+
+public://メンバ関数
 	WinApp();
 	~WinApp();
+
 	//ウィンドゥプロシージャ
 	static LRESULT WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -14,9 +17,13 @@ public:
 
 	//更新
 	void Update();
-private:
-	
 
+private://メンバ変数
+	//ウィンドゥハンドル
+	HWND hwnd = nullptr;
+
+public://アクセッサ置き場
+	HWND GetHwnd() const { return hwnd; }
 };
 
 WinApp::WinApp()

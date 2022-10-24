@@ -157,7 +157,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 
 	result = dxgiFactory->CreateSwapChainForHwnd(
 		commandQueue.Get(),
-		hwnd,
+		winApp->GetHwnd(),
 		&swapChainDesc,
 		nullptr,
 		nullptr,
@@ -214,8 +214,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// •`‰æ‰Šú‰»ˆ—@‚±‚±‚©‚ç
 #pragma region •`‰æ‰Šú‰»ˆ—
 	
-	input->Initialize(w.hInstance, hwnd);
-	mesh->Initialize(w.hInstance, hwnd, device.Get());
+	input->Initialize(w.hInstance, winApp->GetHwnd());
+	mesh->Initialize(w.hInstance, winApp->GetHwnd(), device.Get());
 
 #pragma endregion
 	// •`‰æ‰Šú‰»ˆ—@‚±‚±‚Ü‚Å
