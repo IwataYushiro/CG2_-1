@@ -53,11 +53,26 @@ void WinApp::Initialize() {
 
 }
 
-//更新
-void WinApp::Update() {
+//プロセスメッセージ
+bool WinApp::ProcessMessage() {
 
+	MSG msg{}; //メッセージ
+
+	if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	if (msg.message == WM_QUIT)
+	{
+		return true;
+	}
+
+	return false;
 }
 
+//終了処理
 void WinApp::Finalize()
 {
 	//ウィンドゥクラスを登録解除

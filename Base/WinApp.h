@@ -17,7 +17,7 @@ public://メンバ関数
 	void Initialize();
 
 	//更新
-	void Update();
+	bool ProcessMessage();
 
 	//終了処理
 	void Finalize();

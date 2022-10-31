@@ -223,16 +223,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ゲームループ
 	while (true)
 	{
-		MSG msg{}; //メッセージ
-
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		//Windowsのメッセージ処理
+		if (winApp->ProcessMessage())
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		if (msg.message == WM_QUIT)
-		{
+			//ゲームループを抜ける
 			break;
 		}
 
