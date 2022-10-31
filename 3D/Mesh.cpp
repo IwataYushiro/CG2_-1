@@ -11,13 +11,14 @@ Mesh::~Mesh()
 	delete input_;
 }
 
-void Mesh::Initialize(HINSTANCE hInstance, HWND hwnd,ID3D12Device* device)
+void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 {
 	HRESULT result;
-	
+	this->winApp_ = winApp;
+
 	//シングルトンインスタンスを取得
 	input_ = new Input();
-	input_->Initialize(hInstance, hwnd);
+	input_->Initialize(winApp);
 
 #pragma region 描画初期化処理
 	for (int i = 0; i < VerticesCount_; i++)

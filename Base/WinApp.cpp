@@ -49,9 +49,17 @@ void WinApp::Initialize() {
 
 	//ウィンドゥを表示状態にする
 	ShowWindow(hwnd, SW_SHOW);
+
+
 }
 
 //更新
 void WinApp::Update() {
 
+}
+
+void WinApp::Finalize()
+{
+	//ウィンドゥクラスを登録解除
+	UnregisterClass(wndClassEx.lpszClassName, wndClassEx.hInstance);
 }

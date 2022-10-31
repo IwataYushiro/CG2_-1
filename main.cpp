@@ -29,7 +29,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma endregion
 
 #pragma region Windows初期化
-	
+
 #pragma endregion
 	// DirectX初期化処理　ここから
 #pragma region デバッグレイヤ
@@ -214,8 +214,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
 	
-	input->Initialize(winApp->GetHinstance(), winApp->GetHwnd());
-	mesh->Initialize(winApp->GetHinstance(), winApp->GetHwnd(), device.Get());
+	input->Initialize(winApp);
+	mesh->Initialize(winApp, device.Get());
 
 #pragma endregion
 	// 描画初期化処理　ここまで
@@ -223,13 +223,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ゲームループ
 	while (true)
 	{
-		if (PeekMessage(&winApp->GetMsg(), nullptr, 0, 0, PM_REMOVE))
+		MSG msg{}; //メッセージ
+
+		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 		{
-			TranslateMessage(&winApp->GetMsg());
-			DispatchMessage(&winApp->GetMsg());
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
 		}
 
-		if (winApp->GetMsg().message == WM_QUIT)
+		if (msg.message == WM_QUIT)
 		{
 			break;
 		}
@@ -317,9 +319,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		// DirectX毎フレーム処理　ここまで
 
 	}
+	winApp->Finalize();
 
-	//ウィンドゥクラスを登録解除
-	UnregisterClass(w.lpszClassName, w.hInstance);
 	//解放
 	delete winApp;
 	delete mesh;

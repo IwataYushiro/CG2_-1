@@ -12,6 +12,7 @@
 #include <string>
 #include <math.h>
 #include <DirectXTex.h>
+#include "WinApp.h"
 
 using namespace DirectX;
 
@@ -70,7 +71,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(HINSTANCE hInstance, HWND hwnd, ID3D12Device* device);
+	void Initialize(WinApp* winApp, ID3D12Device* device);
 	
 	//定数バッファの設定
 	void CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device);
@@ -104,7 +105,8 @@ public:
 private://メンバ変数
 	//インプット
 	Input* input_ = nullptr;
-
+	//WinApp
+	WinApp* winApp_ = nullptr;
 	//頂点数
 	static const size_t VerticesCount_ = 24;
 	//インデックス数

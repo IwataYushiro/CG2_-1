@@ -9,7 +9,7 @@ void Input::Initialize(WinApp* winApp)
 {
 	HRESULT result;
 
-	this->winApp = winApp;
+	this->winApp_ = winApp;
 #pragma	region DirectInput‚Ì‰Šú‰»
 	
 	result = DirectInput8Create(

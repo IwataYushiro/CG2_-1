@@ -37,7 +37,7 @@ public:
 	
 private://メンバ変数
 	//WindowsAPI
-	WinApp* winApp = nullptr;
+	WinApp* winApp_ = nullptr;
 	//DirectInputの初期化
 	ComPtr<IDirectInput8> directInput = nullptr;
 	//キーボード
