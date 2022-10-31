@@ -25,8 +25,17 @@ private://メンバ変数
 	//ウィンドゥハンドル
 	HWND hwnd = nullptr;
 
+	//ウィンドゥクラスの設定
+	WNDCLASSEX wndClassEx{};
+
+	MSG msg{}; //メッセージ
+
 public://アクセッサ置き場
 	HWND GetHwnd() const { return hwnd; }
+
+	HINSTANCE GetHinstance() const { return wndClassEx.hInstance; }
+
+	MSG GetMsg() const { return msg; }
 };
 
 WinApp::WinApp()

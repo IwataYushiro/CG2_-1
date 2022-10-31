@@ -214,8 +214,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
 	
-	input->Initialize(w.hInstance, winApp->GetHwnd());
-	mesh->Initialize(w.hInstance, winApp->GetHwnd(), device.Get());
+	input->Initialize(winApp->GetHinstance(), winApp->GetHwnd());
+	mesh->Initialize(winApp->GetHinstance(), winApp->GetHwnd(), device.Get());
 
 #pragma endregion
 	// 描画初期化処理　ここまで
@@ -223,13 +223,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	//ゲームループ
 	while (true)
 	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		if (PeekMessage(&winApp->GetMsg(), nullptr, 0, 0, PM_REMOVE))
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			TranslateMessage(&winApp->GetMsg());
+			DispatchMessage(&winApp->GetMsg());
 		}
 
-		if (msg.message == WM_QUIT)
+		if (winApp->GetMsg().message == WM_QUIT)
 		{
 			break;
 		}
@@ -271,9 +271,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 		//シザー矩形
 		D3D12_RECT scissorRect{};
 		scissorRect.left = 0;
-		scissorRect.right = scissorRect.left + window_width;
+		scissorRect.right = scissorRect.left + WinApp::window_width;
 		scissorRect.top = 0;
-		scissorRect.bottom = scissorRect.top + window_height;
+		scissorRect.bottom = scissorRect.top + WinApp::window_height;
 		//シザー矩形設定コマンドを、コマンドリストに積む
 		commandList->RSSetScissorRects(1, &scissorRect);
 
