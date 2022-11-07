@@ -13,9 +13,7 @@ public: // 省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
 public:
-	DirectXCommon();
-	~DirectXCommon();
-
+	
 	//初期化
 	void Initialize(WinApp* winApp);
 	//デバイスの初期化
@@ -67,12 +65,8 @@ private:
 
 	//リソースバリア
 	D3D12_RESOURCE_BARRIER barrierDesc{};
+
+public://アクセッサ置き場
+	//デバイス取得
+	ID3D12Device* GetDevice() const { return device.Get(); }
 };
-
-DirectXCommon::DirectXCommon()
-{
-}
-
-DirectXCommon::~DirectXCommon()
-{
-}

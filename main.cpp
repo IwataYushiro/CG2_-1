@@ -36,7 +36,7 @@ winApp->Initialize();
 #pragma region •`‰æ‰Šú‰»ˆ—
 	
 	input->Initialize(winApp);
-	mesh->Initialize(winApp, device.Get());
+	mesh->Initialize(winApp, dxCommon);
 
 #pragma endregion
 	// •`‰æ‰Šú‰»ˆ—@‚±‚±‚Ü‚Å

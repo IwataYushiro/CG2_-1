@@ -3,6 +3,7 @@
 #include <cassert>
 #include <dinput.h>
 #include <DirectXMath.h>
+#include <DirectXCommon.h>
 #include <Input.h>
 #include <random>
 #include <wrl.h>
@@ -14,24 +15,29 @@
 
 //using namespace DirectX;
 
-//定数バッファ用データ構造体(マテリアル)
-struct ConstBufferDataMaterial
-{
-	XMFLOAT4 color;	//色(RGBA)
-
-};
-struct ConstBufferDataTransform
-{
-	XMMATRIX mat; // 3D変換行列
-
-};
 
 class Mesh
 {
 public: // メンバ関数
-	//エイリアステンプレート
+	//エイリアステンプレートとかで色々省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+	using XMFLOAT2 = DirectX::XMFLOAT2;
+	using XMFLOAT3 = DirectX::XMFLOAT3;
+	using XMFLOAT4 = DirectX::XMFLOAT4;
+	using XMMATRIX = DirectX::XMMATRIX;
 private:
+	//定数バッファ用データ構造体(マテリアル)
+	struct ConstBufferDataMaterial
+	{
+		XMFLOAT4 color;	//色(RGBA)
+
+	};
+	struct ConstBufferDataTransform
+	{
+		XMMATRIX mat; // 3D変換行列
+
+	};
+
 	struct Material3d
 	{
 		//定数バッファのGPUリソースのポインタ
@@ -58,7 +64,7 @@ private:
 		XMFLOAT3 rotation = { 0.0f,0.0f,0.0f };
 		XMFLOAT3 position = { 0.0f,0.0f,0.0f };
 		//ワールド変換行列
-		XMMATRIX matWorld = XMMatrixIdentity();
+		XMMATRIX matWorld = DirectX::XMMatrixIdentity();
 		//親オブジェクトへのポインタ
 		Object3d* parent = nullptr;
 	};
@@ -69,7 +75,7 @@ public:
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(WinApp* winApp, ID3D12Device* device);
+	void Initialize(WinApp* winApp, DirectXCommon* dxCommon);
 	
 	//定数バッファの設定
 	void CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device);
@@ -87,7 +93,7 @@ public:
 	//画面クリア設定
 
 	void Update(ID3D12Device* device);
-	void UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection);
+	void UpdateObject3d(Object3d* object,XMMATRIX& matview, XMMATRIX& matprojection);
 	void ControlObject3d(Object3d* object);
 	/// <summary>
 	/// 描画
@@ -102,7 +108,9 @@ private://メンバ変数
 	Input* input_ = nullptr;
 	//WinApp
 	WinApp* winApp_ = nullptr;
-	//頂点数
+	//DirectXCommon
+	DirectXCommon* dxCommon_ = nullptr;
+
 	static const size_t VerticesCount_ = 24;
 	//インデックス数
 	static const size_t indicesCount_ = 36;

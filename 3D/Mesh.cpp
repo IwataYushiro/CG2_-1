@@ -1,5 +1,6 @@
 #include "Mesh.h"
 
+using namespace DirectX;
 
 Mesh::Mesh()
 {
@@ -8,17 +9,15 @@ Mesh::Mesh()
 
 Mesh::~Mesh()
 {
-	delete input_;
 }
 
-void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
+void Mesh::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
 {
 	HRESULT result;
 	this->winApp_ = winApp;
-
+	this->dxCommon_ = dxCommon;
 	//シングルトンインスタンスを取得
-	input_ = new Input();
-	input_->Initialize(winApp);
+	input_->Initialize(winApp_);
 
 #pragma region 描画初期化処理
 	for (int i = 0; i < VerticesCount_; i++)
@@ -62,7 +61,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 
 	//頂点バッファの生成
 	
-	result = device->CreateCommittedResource(
+	result =dxCommon_->GetDevice()->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
 		&resDesc, //リソース設定
@@ -84,7 +83,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 
 	//インデックスバッファの生成
 	
-	result = device->CreateCommittedResource(
+	result = dxCommon_->GetDevice()->CreateCommittedResource(
 		&heapProp,//ヒープ設定
 		D3D12_HEAP_FLAG_NONE,
 		&resDesc, //リソース設定
@@ -107,12 +106,12 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 
 
 	//定数バッファの設定
-	CreateConstBufferMaterial3d(&material3d_, device);
+	CreateConstBufferMaterial3d(&material3d_, dxCommon_->GetDevice());
 
 	//オブジェクトの初期化
 	for (int i = 0; i < _countof(object3ds_); i++)
 	{
-		CreateConstBufferObject3d(&object3ds_[i], device);
+		CreateConstBufferObject3d(&object3ds_[i], dxCommon_->GetDevice());
 		//以下親子構造のサンプル
 		SetObject3ds(i);
 	}
@@ -127,7 +126,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 	//透視投影変換行列の計算
 	matprojection = XMMatrixPerspectiveFovLH(
 		XMConvertToRadians(45.0f),
-		(float)windowWidth / windowHeight,
+		(float)winApp_->window_width / winApp_->window_height,
 		0.1f, 1000.0f
 	);
 
@@ -187,7 +186,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 
 	//テクスチャバッファの生成
 	
-	result = device->CreateCommittedResource(
+	result = dxCommon_->GetDevice()->CreateCommittedResource(
 		&textureHeapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&textureResourceDesc,
@@ -250,7 +249,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 
 	//テクスチャバッファの生成
 
-	result = device->CreateCommittedResource(
+	result = dxCommon_->GetDevice()->CreateCommittedResource(
 		&textureHeapProp,
 		D3D12_HEAP_FLAG_NONE,
 		&textureResourceDesc2,
@@ -287,7 +286,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 	
 
 	//設定をもとにSRV用デスクリプタヒープを生成
-	result = device->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
+	result = dxCommon_->GetDevice()->CreateDescriptorHeap(&srvHeapDesc, IID_PPV_ARGS(&srvHeap));
 	assert(SUCCEEDED(result));
 
 	//SRVヒープのハンドルを取得
@@ -303,9 +302,9 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 	srvDesc.Texture2D.MipLevels = resDesc.MipLevels;
 
 	//ハンドルの指す位置にシェーダーリソースビュー作成
-	device->CreateShaderResourceView(texbuff.Get(), &srvDesc, srvHandle);
+	dxCommon_->GetDevice()->CreateShaderResourceView(texbuff.Get(), &srvDesc, srvHandle);
 	//1つハンドルを進める
-	incrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	incrementSize = dxCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	srvHandle.ptr += incrementSize;
 
 	//シェーダーリソースビュー設定
@@ -317,7 +316,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 	srvDesc2.Texture2D.MipLevels = resDesc.MipLevels;
 
 	//ハンドルの指す位置にシェーダーリソースビュー作成
-	device->CreateShaderResourceView(texbuff2.Get(), &srvDesc2, srvHandle);
+	dxCommon_->GetDevice()->CreateShaderResourceView(texbuff2.Get(), &srvDesc2, srvHandle);
 
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
@@ -530,7 +529,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 		&rootSigBlob, &errorBlob);
 	assert(SUCCEEDED(result));
 
-	result = device->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
+	result = dxCommon_->GetDevice()->CreateRootSignature(0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(),
 		IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(result));
 	
@@ -540,7 +539,7 @@ void Mesh::Initialize(WinApp* winApp,ID3D12Device* device)
 
 #pragma region パイプラインステートの生成
 
-	result = device->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
+	result = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
 #pragma endregion
 }
