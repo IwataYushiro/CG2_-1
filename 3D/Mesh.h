@@ -116,10 +116,6 @@ private://メンバ変数
 	//3Dオブジェクトの配列
 	Object3d object3ds_[kObjectCount_];
 	
-	//ウィンドゥサイズ
-	const int windowWidth = 1280; //横幅
-	const int windowHeight = 720; //縦幅
-
 	struct Vertex
 	{
 		XMFLOAT3 pos;		//xyz座標
@@ -238,12 +234,7 @@ private://メンバ変数
 	ComPtr<ID3DBlob> psBlob = nullptr;		//ピクセルシェーダーオブジェクト
 	ComPtr<ID3DBlob> errorBlob = nullptr;	//エラーオブジェクト
 
-	//深度バッファ生成
-	ComPtr<ID3D12Resource> depthBuff = nullptr;
-
-	//深度ビュー用のデスクリプタヒープを生成
-	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
-
+	
 	//設定をもとにSRV用デスクリプタヒープを生成
 	ComPtr<ID3D12DescriptorHeap> srvHeap;
 

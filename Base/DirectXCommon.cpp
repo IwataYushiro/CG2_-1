@@ -15,6 +15,23 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	this->winApp_ = winApp;
 
 #pragma region DirectX初期化
+	//デバイスの初期化
+	InitializeDevice();
+	//コマンド関連の初期化
+	InitializeCommand();
+	//スワップチェーンの初期化
+	InitializeSwapchain();
+	//レンダーターゲットビューの初期化
+	InitializeRenderTargetView();
+	//深度バッファの初期化
+	InitializeDepthBuffer();
+	//フェンス初期化
+	InitializeFence();
+#pragma endregion
+}
+
+void DirectXCommon::InitializeDevice()
+{
 #ifdef _DEBUG
 	//デバッグレイヤーをオンに
 	ComPtr<ID3D12Debug> debugController;
@@ -24,7 +41,7 @@ void DirectXCommon::Initialize(WinApp* winApp)
 #endif
 
 	HRESULT result;
-	
+
 #pragma region デバッグレイヤ
 
 #pragma endregion
@@ -92,16 +109,6 @@ void DirectXCommon::Initialize(WinApp* winApp)
 		}
 	}
 #pragma endregion
-
-#pragma region フェンス生成
-	// フェンスの生成
-	ComPtr<ID3D12Fence> fence = nullptr;
-	UINT64 fenceVal = 0;
-
-	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
-#pragma endregion
-
-#pragma endregion
 }
 
 void DirectXCommon::InitializeCommand()
@@ -138,7 +145,7 @@ void DirectXCommon::InitializeSwapchain()
 
 #pragma region スワップチェーンの生成
 	// スワップチェーンの設定
-	
+
 	swapChainDesc.Width = 1280;
 	swapChainDesc.Height = 720;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色情報の書式
@@ -153,7 +160,7 @@ void DirectXCommon::InitializeSwapchain()
 
 	result = dxgiFactory->CreateSwapChainForHwnd(
 		commandQueue.Get(),
-		winApp->GetHwnd(),
+		winApp_->GetHwnd(),
 		&swapChainDesc,
 		nullptr,
 		nullptr,
@@ -197,5 +204,69 @@ void DirectXCommon::InitializeRenderTargetView()
 		device->CreateRenderTargetView(backBuffers[i].Get(), &rtvDesc, rtvHandle);
 	}
 
+#pragma endregion
+}
+
+void DirectXCommon::InitializeDepthBuffer()
+{
+
+	HRESULT result;
+	//深度バッファ設定
+	D3D12_RESOURCE_DESC depthResourceDesc{};
+	depthResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	depthResourceDesc.Width = windowWidth;		//レンダーターゲットに合わせる
+	depthResourceDesc.Height = windowHeight;	//レンダーターゲットに合わせる
+	depthResourceDesc.DepthOrArraySize = 1;
+	depthResourceDesc.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
+	depthResourceDesc.SampleDesc.Count = 1;
+	depthResourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;//デプスステンシル
+
+	//深度値用ヒーププロパティ
+	D3D12_HEAP_PROPERTIES depthHeapProp{};
+	depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT;
+	//深度値のクリア設定
+	D3D12_CLEAR_VALUE depthClearValue{};
+	depthClearValue.DepthStencil.Depth = 1.0f;//深度値1.0f(最大値)でクリア
+	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
+
+	//深度バッファ生成
+	ComPtr<ID3D12Resource> depthBuff = nullptr;
+	result = device->CreateCommittedResource(
+		&depthHeapProp,
+		D3D12_HEAP_FLAG_NONE,
+		&depthResourceDesc,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,	//深度値書き込みに必要
+		&depthClearValue,
+		IID_PPV_ARGS(&depthBuff));
+
+	//深度ビュー用デスクリプタヒープ生成
+	D3D12_DESCRIPTOR_HEAP_DESC dsvHeapDesc{};
+	dsvHeapDesc.NumDescriptors = 1;//深度ビューは1つ
+	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; //デプスステンシルビュー
+
+	//深度ビュー用のデスクリプタヒープを生成
+	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
+	result = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
+
+	//深度ビューの作成
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; //深度値フォーマット
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	device->CreateDepthStencilView(
+		depthBuff.Get(),
+		&dsvDesc,
+		dsvHeap->GetCPUDescriptorHandleForHeapStart());
+
+}
+
+void DirectXCommon::InitializeFence()
+{
+	HRESULT result;
+#pragma region フェンス生成
+	// フェンスの生成
+	ComPtr<ID3D12Fence> fence = nullptr;
+	UINT64 fenceVal = 0;
+
+	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 #pragma endregion
 }

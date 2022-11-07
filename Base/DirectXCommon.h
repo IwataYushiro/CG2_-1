@@ -11,18 +11,29 @@ class DirectXCommon
 public: // 省略
 	//エイリアステンプレート
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+public: //定数
+	// ウィンドゥサイズ
+	const int windowWidth = 1280; //横幅
+	const int windowHeight = 720; //縦幅
+
 public:
 	DirectXCommon();
 	~DirectXCommon();
 
 	//初期化
 	void Initialize(WinApp* winApp);
+	//デバイスの初期化
+	void InitializeDevice();
 	//コマンド関連の初期化
 	void InitializeCommand();
 	//スワップチェーンの初期化
 	void InitializeSwapchain();
 	//レンダーターゲットビューの初期化
 	void InitializeRenderTargetView();
+	//深度バッファの初期化
+	void InitializeDepthBuffer();
+	//フェンス初期化
+	void InitializeFence();
 private:
 	//DirectX12デバイス
 	ComPtr<ID3D12Device> device = nullptr;
