@@ -57,9 +57,16 @@ private:
 	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
 	// バックバッファ
 	std::vector<ComPtr<ID3D12Resource>> backBuffers;
+	// フェンス
+	ComPtr<ID3D12Fence> fence = nullptr;
+	//フェンス値
+	UINT64 fenceVal = 0;
 
 	//WindowsAPI
 	WinApp* winApp_ = nullptr;
+
+	//リソースバリア
+	D3D12_RESOURCE_BARRIER barrierDesc{};
 };
 
 DirectXCommon::DirectXCommon()

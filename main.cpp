@@ -56,42 +56,11 @@ winApp->Initialize();
 		dxCommon->PreDraw();
 
 		mesh->Draw(commandList.Get());
+
+		//描画後処理
+		dxCommon->PostDraw();
 		// 4.描画コマンドここまで
 
-		// 5.リソースバリアを戻す
-		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
-		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			//表示状態へ
-		commandList->ResourceBarrier(1, &barrierDesc);
-
-		// コマンドのフラッシュ
-
-		// 命令のクローズ
-		result = commandList->Close();
-		assert(SUCCEEDED(result));
-		// コマンドリストの実行
-		ID3D12CommandList* commandLists[] = { commandList.Get() };
-		commandQueue->ExecuteCommandLists(1, commandLists);
-
-		// 画面に表示するバッファをフリップ(裏表の入替え)
-		result = swapChain->Present(1, 0);
-		assert(SUCCEEDED(result));
-
-		//コマンドの実行完了を待つ
-		commandQueue->Signal(fence.Get(), ++fenceVal);
-		if (fence->GetCompletedValue() != fenceVal)
-		{
-			HANDLE event = CreateEvent(nullptr, false, false, nullptr);
-			fence->SetEventOnCompletion(fenceVal, event);
-			WaitForSingleObject(event, INFINITE);
-			CloseHandle(event);
-		}
-
-		//キューをクリア
-		result = cmdAllocator->Reset();
-		assert(SUCCEEDED(result));
-		//再びコマンドリストを貯める準備
-		result = commandList->Reset(cmdAllocator.Get(), nullptr);
-		assert(SUCCEEDED(result));
 		// DirectX毎フレーム処理　ここまで
 
 	}

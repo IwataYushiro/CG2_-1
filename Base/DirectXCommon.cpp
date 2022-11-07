@@ -261,10 +261,7 @@ void DirectXCommon::InitializeFence()
 {
 	HRESULT result;
 #pragma region フェンス生成
-	// フェンスの生成
-	ComPtr<ID3D12Fence> fence = nullptr;
-	UINT64 fenceVal = 0;
-
+	
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 #pragma endregion
 }
@@ -274,7 +271,7 @@ void DirectXCommon::PreDraw()
 	// バックバッファの番号を取得(2つなので0番か1番)
 	UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 	// 1.リソースバリアで書き込み可能に変更
-	D3D12_RESOURCE_BARRIER barrierDesc{};
+	
 	barrierDesc.Transition.pResource = backBuffers[bbIndex].Get(); // バックバッファを指定
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
@@ -317,4 +314,40 @@ void DirectXCommon::PreDraw()
 
 void DirectXCommon::PostDraw()
 {
+	HRESULT result;
+	
+	// 5.リソースバリアを戻す
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			//表示状態へ
+	commandList->ResourceBarrier(1, &barrierDesc);
+
+	// コマンドのフラッシュ
+
+	// 命令のクローズ
+	result = commandList->Close();
+	assert(SUCCEEDED(result));
+	// コマンドリストの実行
+	ID3D12CommandList* commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(1, commandLists);
+
+	// 画面に表示するバッファをフリップ(裏表の入替え)
+	result = swapChain->Present(1, 0);
+	assert(SUCCEEDED(result));
+
+	//コマンドの実行完了を待つ
+	commandQueue->Signal(fence.Get(), ++fenceVal);
+	if (fence->GetCompletedValue() != fenceVal)
+	{
+		HANDLE event = CreateEvent(nullptr, false, false, nullptr);
+		fence->SetEventOnCompletion(fenceVal, event);
+		WaitForSingleObject(event, INFINITE);
+		CloseHandle(event);
+	}
+
+	//キューをクリア
+	result = cmdAllocator->Reset();
+	assert(SUCCEEDED(result));
+	//再びコマンドリストを貯める準備
+	result = commandList->Reset(cmdAllocator.Get(), nullptr);
+	assert(SUCCEEDED(result));
 }
