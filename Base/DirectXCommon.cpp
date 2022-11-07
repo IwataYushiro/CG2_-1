@@ -1,15 +1,19 @@
 #include <DirectXCommon.h>
 
 #include <cassert>
-#include <vector>
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 
 using namespace Microsoft::WRL;
 
-void DirectXCommon::Initialize()
+void DirectXCommon::Initialize(WinApp* winApp)
 {
+	//NULLチェック
+	assert(winApp);
+
+	this->winApp_ = winApp;
+
 #pragma region DirectX初期化
 #ifdef _DEBUG
 	//デバッグレイヤーをオンに
@@ -21,8 +25,6 @@ void DirectXCommon::Initialize()
 
 	HRESULT result;
 	
-	ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr;
-
 #pragma region デバッグレイヤ
 
 #pragma endregion
@@ -91,37 +93,6 @@ void DirectXCommon::Initialize()
 	}
 #pragma endregion
 
-#pragma region レンダビューターゲット
-	// デスクリプタヒープの設定
-	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
-	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー
-	rtvHeapDesc.NumDescriptors = swapChainDesc.BufferCount; // 裏表の2つ
-	// デスクリプタヒープの生成
-	device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
-
-	// バックバッファ
-	std::vector<ComPtr<ID3D12Resource>> backBuffers;
-	backBuffers.resize(swapChainDesc.BufferCount);
-
-	// スワップチェーンの全てのバッファについて処理する
-	for (size_t i = 0; i < backBuffers.size(); i++) {
-		// スワップチェーンからバッファを取得
-		swapChain->GetBuffer((UINT)i, IID_PPV_ARGS(&backBuffers[i]));
-		// デスクリプタヒープのハンドルを取得
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-		// 裏か表かでアドレスがずれる
-		rtvHandle.ptr += i * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
-		// レンダーターゲットビューの設定
-		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-		// シェーダーの計算結果をSRGBに変換して書き込む
-		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		// レンダーターゲットビューの生成
-		device->CreateRenderTargetView(backBuffers[i].Get(), &rtvDesc, rtvHandle);
-	}
-
-#pragma endregion
-
 #pragma region フェンス生成
 	// フェンスの生成
 	ComPtr<ID3D12Fence> fence = nullptr;
@@ -167,7 +138,7 @@ void DirectXCommon::InitializeSwapchain()
 
 #pragma region スワップチェーンの生成
 	// スワップチェーンの設定
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+	
 	swapChainDesc.Width = 1280;
 	swapChainDesc.Height = 720;
 	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色情報の書式
@@ -192,5 +163,39 @@ void DirectXCommon::InitializeSwapchain()
 	swapChain1.As(&swapChain);
 
 	assert(SUCCEEDED(result));
+#pragma endregion
+}
+
+void DirectXCommon::InitializeRenderTargetView()
+{
+
+#pragma region レンダビューターゲット
+	// デスクリプタヒープの設定
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
+	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー
+	rtvHeapDesc.NumDescriptors = swapChainDesc.BufferCount; // 裏表の2つ
+	// デスクリプタヒープの生成
+	device->CreateDescriptorHeap(&rtvHeapDesc, IID_PPV_ARGS(&rtvHeap));
+
+	// バックバッファ
+	backBuffers.resize(swapChainDesc.BufferCount);
+
+	// スワップチェーンの全てのバッファについて処理する
+	for (size_t i = 0; i < backBuffers.size(); i++) {
+		// スワップチェーンからバッファを取得
+		swapChain->GetBuffer((UINT)i, IID_PPV_ARGS(&backBuffers[i]));
+		// デスクリプタヒープのハンドルを取得
+		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+		// 裏か表かでアドレスがずれる
+		rtvHandle.ptr += i * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
+		// レンダーターゲットビューの設定
+		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+		// シェーダーの計算結果をSRGBに変換して書き込む
+		rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+		// レンダーターゲットビューの生成
+		device->CreateRenderTargetView(backBuffers[i].Get(), &rtvDesc, rtvHandle);
+	}
+
 #pragma endregion
 }
