@@ -11,13 +11,21 @@ using namespace Microsoft::WRL;
 void DirectXCommon::Initialize()
 {
 #pragma region DirectX初期化
+#ifdef _DEBUG
+	//デバッグレイヤーをオンに
+	ComPtr<ID3D12Debug> debugController;
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
+		debugController->EnableDebugLayer();
+	}
+#endif
+
 	HRESULT result;
-	ComPtr<IDXGISwapChain4> swapChain = nullptr;
-	ComPtr<ID3D12CommandAllocator> cmdAllocator = nullptr;
-	ComPtr<ID3D12GraphicsCommandList> commandList = nullptr;
-	ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	
 	ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr;
 
+#pragma region デバッグレイヤ
+
+#pragma endregion
 #pragma region アダプタの列挙
 	//DXGIファクトリーの生成
 	result = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
@@ -83,58 +91,6 @@ void DirectXCommon::Initialize()
 	}
 #pragma endregion
 
-#pragma region コマンドリストの生成
-	// コマンドアロケータを生成
-	result = device->CreateCommandAllocator(
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		IID_PPV_ARGS(&cmdAllocator));
-	assert(SUCCEEDED(result));
-
-	// コマンドリストを生成
-	result = device->CreateCommandList(0,
-		D3D12_COMMAND_LIST_TYPE_DIRECT,
-		cmdAllocator.Get(), nullptr,
-		IID_PPV_ARGS(&commandList));
-	assert(SUCCEEDED(result));
-#pragma endregion
-
-#pragma region コマンドキューの生成
-	//コマンドキューの設定
-	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
-	//コマンドキューを生成
-	result = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
-	assert(SUCCEEDED(result));
-#pragma endregion
-
-#pragma region スワップチェーンの生成
-	// スワップチェーンの設定
-	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
-	swapChainDesc.Width = 1280;
-	swapChainDesc.Height = 720;
-	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色情報の書式
-	swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない
-	swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER; // バックバッファ用
-	swapChainDesc.BufferCount = 2; // バッファ数を2つに設定
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // フリップ後は破棄
-	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-	// スワップチェーンの生成
-	//IDXGISwapChain1のComPtrを用意
-	ComPtr<IDXGISwapChain1> swapChain1;
-
-	result = dxgiFactory->CreateSwapChainForHwnd(
-		commandQueue.Get(),
-		winApp->GetHwnd(),
-		&swapChainDesc,
-		nullptr,
-		nullptr,
-		&swapChain1);
-
-	//生成したIDXGISwapChain1のオブジェクトをIDXGISwapChain4に変換
-	swapChain1.As(&swapChain);
-
-	assert(SUCCEEDED(result));
-#pragma endregion
-
 #pragma region レンダビューターゲット
 	// デスクリプタヒープの設定
 	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
@@ -174,5 +130,67 @@ void DirectXCommon::Initialize()
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 #pragma endregion
 
+#pragma endregion
+}
+
+void DirectXCommon::InitializeCommand()
+{
+	HRESULT result;
+
+#pragma region コマンドリストの生成
+	// コマンドアロケータを生成
+	result = device->CreateCommandAllocator(
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		IID_PPV_ARGS(&cmdAllocator));
+	assert(SUCCEEDED(result));
+
+	// コマンドリストを生成
+	result = device->CreateCommandList(0,
+		D3D12_COMMAND_LIST_TYPE_DIRECT,
+		cmdAllocator.Get(), nullptr,
+		IID_PPV_ARGS(&commandList));
+	assert(SUCCEEDED(result));
+#pragma endregion
+
+#pragma region コマンドキューの生成
+	//コマンドキューの設定
+	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
+	//コマンドキューを生成
+	result = device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue));
+	assert(SUCCEEDED(result));
+#pragma endregion
+}
+
+void DirectXCommon::InitializeSwapchain()
+{
+	HRESULT result;
+
+#pragma region スワップチェーンの生成
+	// スワップチェーンの設定
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+	swapChainDesc.Width = 1280;
+	swapChainDesc.Height = 720;
+	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 色情報の書式
+	swapChainDesc.SampleDesc.Count = 1; // マルチサンプルしない
+	swapChainDesc.BufferUsage = DXGI_USAGE_BACK_BUFFER; // バックバッファ用
+	swapChainDesc.BufferCount = 2; // バッファ数を2つに設定
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD; // フリップ後は破棄
+	swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+	// スワップチェーンの生成
+	//IDXGISwapChain1のComPtrを用意
+	ComPtr<IDXGISwapChain1> swapChain1;
+
+	result = dxgiFactory->CreateSwapChainForHwnd(
+		commandQueue.Get(),
+		winApp->GetHwnd(),
+		&swapChainDesc,
+		nullptr,
+		nullptr,
+		&swapChain1);
+
+	//生成したIDXGISwapChain1のオブジェクトをIDXGISwapChain4に変換
+	swapChain1.As(&swapChain);
+
+	assert(SUCCEEDED(result));
 #pragma endregion
 }

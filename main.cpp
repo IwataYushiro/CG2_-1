@@ -14,7 +14,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #pragma region ポインタ置き場
 	WinApp* winApp = new WinApp();
-	winApp->Initialize();
+	
 	DirectXCommon* dxCommon = new DirectXCommon();
 
 	Input* input = new Input();
@@ -24,23 +24,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma endregion
 
 #pragma region Windows初期化
-
+winApp->Initialize();
 #pragma endregion
 	// DirectX初期化処理　ここから
-#pragma region デバッグレイヤ
-#ifdef _DEBUG
-//デバッグレイヤーをオンに
-	ComPtr<ID3D12Debug> debugController;
-	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
-		debugController->EnableDebugLayer();
-	}
-#endif
 
 	//DirectX初期化
 	dxCommon->Initialize();
-#pragma endregion
-
-
 	// DirectX初期化処理　ここまで
 
 	// 描画初期化処理　ここから
