@@ -178,7 +178,7 @@ void DirectXCommon::InitializeRenderTargetView()
 
 #pragma region レンダビューターゲット
 	// デスクリプタヒープの設定
-	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
+	
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー
 	rtvHeapDesc.NumDescriptors = swapChainDesc.BufferCount; // 裏表の2つ
 	// デスクリプタヒープの生成
@@ -214,8 +214,8 @@ void DirectXCommon::InitializeDepthBuffer()
 	//深度バッファ設定
 	D3D12_RESOURCE_DESC depthResourceDesc{};
 	depthResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-	depthResourceDesc.Width = windowWidth;		//レンダーターゲットに合わせる
-	depthResourceDesc.Height = windowHeight;	//レンダーターゲットに合わせる
+	depthResourceDesc.Width = winApp_->window_width;		//レンダーターゲットに合わせる
+	depthResourceDesc.Height = winApp_->window_height;	//レンダーターゲットに合わせる
 	depthResourceDesc.DepthOrArraySize = 1;
 	depthResourceDesc.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
 	depthResourceDesc.SampleDesc.Count = 1;
@@ -244,8 +244,6 @@ void DirectXCommon::InitializeDepthBuffer()
 	dsvHeapDesc.NumDescriptors = 1;//深度ビューは1つ
 	dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV; //デプスステンシルビュー
 
-	//深度ビュー用のデスクリプタヒープを生成
-	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
 	result = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
 
 	//深度ビューの作成
@@ -269,4 +267,54 @@ void DirectXCommon::InitializeFence()
 
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 #pragma endregion
+}
+
+void DirectXCommon::PreDraw()
+{
+	// バックバッファの番号を取得(2つなので0番か1番)
+	UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
+	// 1.リソースバリアで書き込み可能に変更
+	D3D12_RESOURCE_BARRIER barrierDesc{};
+	barrierDesc.Transition.pResource = backBuffers[bbIndex].Get(); // バックバッファを指定
+	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
+	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
+	commandList->ResourceBarrier(1, &barrierDesc);
+
+	// 2.描画先の変更
+	// レンダーターゲットビューのハンドルを取得
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
+	rtvHandle.ptr += static_cast<unsigned long long>(bbIndex) * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
+	
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+
+	// 3.画面クリア			R	  G		B	A
+	FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
+	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+
+	// 4.描画コマンドここから
+	//ビューポート設定コマンド
+	D3D12_VIEWPORT viewport{};
+	viewport.Width = winApp_->window_width;
+	viewport.Height = winApp_->window_height;
+	viewport.TopLeftX = 0;
+	viewport.TopLeftY = 0;
+	viewport.MinDepth = 0.0f;
+	viewport.MaxDepth = 1.0f;
+	//ビューポート設定コマンドを、コマンドリストに積む
+	commandList->RSSetViewports(1, &viewport);
+
+	//シザー矩形
+	D3D12_RECT scissorRect{};
+	scissorRect.left = 0;
+	scissorRect.right = scissorRect.left + WinApp::window_width;
+	scissorRect.top = 0;
+	scissorRect.bottom = scissorRect.top + WinApp::window_height;
+	//シザー矩形設定コマンドを、コマンドリストに積む
+	commandList->RSSetScissorRects(1, &scissorRect);
+}
+
+void DirectXCommon::PostDraw()
+{
 }

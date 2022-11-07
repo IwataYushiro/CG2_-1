@@ -11,10 +11,6 @@ class DirectXCommon
 public: // 省略
 	//エイリアステンプレート
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
-public: //定数
-	// ウィンドゥサイズ
-	const int windowWidth = 1280; //横幅
-	const int windowHeight = 720; //縦幅
 
 public:
 	DirectXCommon();
@@ -34,6 +30,11 @@ public:
 	void InitializeDepthBuffer();
 	//フェンス初期化
 	void InitializeFence();
+
+	//描画前処理
+	void PreDraw();
+	//描画後処理
+	void PostDraw();
 private:
 	//DirectX12デバイス
 	ComPtr<ID3D12Device> device = nullptr;
@@ -50,7 +51,10 @@ private:
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	
 	//レンダーターゲットビュー
+	D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc{};
 	ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr;
+	//深度ビュー用
+	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
 	// バックバッファ
 	std::vector<ComPtr<ID3D12Resource>> backBuffers;
 

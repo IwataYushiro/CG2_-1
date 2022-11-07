@@ -29,7 +29,7 @@ winApp->Initialize();
 	// DirectX初期化処理　ここから
 
 	//DirectX初期化
-	dxCommon->Initialize();
+	dxCommon->Initialize(winApp);
 	// DirectX初期化処理　ここまで
 
 	// 描画初期化処理　ここから
@@ -52,47 +52,8 @@ winApp->Initialize();
 		}
 
 		// DirectX毎フレーム処理　ここから
-
-		// バックバッファの番号を取得(2つなので0番か1番)
-		UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
-		// 1.リソースバリアで書き込み可能に変更
-		D3D12_RESOURCE_BARRIER barrierDesc{};
-		barrierDesc.Transition.pResource = backBuffers[bbIndex].Get(); // バックバッファを指定
-		barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
-		barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
-		commandList->ResourceBarrier(1, &barrierDesc);
-
-		// 2.描画先の変更
-		// レンダーターゲットビューのハンドルを取得
-		D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
-		rtvHandle.ptr += static_cast<unsigned long long>(bbIndex) * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
-		mesh->GetRenderTargetView(commandList.Get(), rtvHandle);
-
-		// 3.画面クリア			R	  G		B	A
-		mesh->ClearScreen(commandList.Get(), rtvHandle);
-
-		mesh->Update(device.Get());
-
-		// 4.描画コマンドここから
-		//ビューポート設定コマンド
-		D3D12_VIEWPORT viewport{};
-		viewport.Width = WinApp::window_width;
-		viewport.Height = WinApp::window_height;
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-		//ビューポート設定コマンドを、コマンドリストに積む
-		commandList->RSSetViewports(1, &viewport);
-
-		//シザー矩形
-		D3D12_RECT scissorRect{};
-		scissorRect.left = 0;
-		scissorRect.right = scissorRect.left + WinApp::window_width;
-		scissorRect.top = 0;
-		scissorRect.bottom = scissorRect.top + WinApp::window_height;
-		//シザー矩形設定コマンドを、コマンドリストに積む
-		commandList->RSSetScissorRects(1, &scissorRect);
+		//描画前処理
+		dxCommon->PreDraw();
 
 		mesh->Draw(commandList.Get());
 		// 4.描画コマンドここまで

@@ -635,22 +635,6 @@ void Mesh::SetObject3ds(int num)
 	}
 }
 
-void Mesh::GetRenderTargetView(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle)
-{
-	// レンダーターゲットビューのハンドルを取得
-	dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
-
-}
-
-void Mesh::ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle)
-{
-	// 3.画面クリア			R	  G		B	A
-
-	FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
-	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-}
 
 void Mesh::Update(ID3D12Device* device)
 {

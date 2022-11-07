@@ -84,10 +84,7 @@ public:
 	
 	/// </summary>
 
-	//レンダーターゲット設定
-	void GetRenderTargetView(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
 	//画面クリア設定
-	void ClearScreen(ID3D12GraphicsCommandList* commandList, D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle);
 
 	void Update(ID3D12Device* device);
 	void UpdateObject3d(Object3d* object, XMMATRIX& matview, XMMATRIX& matprojection);
@@ -248,8 +245,6 @@ private://メンバ変数
 
 	//パイプラインステートの生成
 	ComPtr<ID3D12PipelineState> pipelineState = nullptr;
-
-	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle;
 
 	float angle = 0.0f;//カメラの回転角
 };
