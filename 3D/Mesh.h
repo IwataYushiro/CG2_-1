@@ -1,7 +1,5 @@
 #pragma once
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
 #include <cassert>
 #include <dinput.h>
 #include <DirectXMath.h>
@@ -14,7 +12,7 @@
 #include <DirectXTex.h>
 #include "WinApp.h"
 
-using namespace DirectX;
+//using namespace DirectX;
 
 //定数バッファ用データ構造体(マテリアル)
 struct ConstBufferDataMaterial
