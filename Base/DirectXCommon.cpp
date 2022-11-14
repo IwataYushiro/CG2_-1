@@ -230,7 +230,7 @@ void DirectXCommon::InitializeDepthBuffer()
 	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
 
 	//深度バッファ生成
-	ComPtr<ID3D12Resource> depthBuff = nullptr;
+	
 	result = device->CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -246,6 +246,9 @@ void DirectXCommon::InitializeDepthBuffer()
 
 	result = device->CreateDescriptorHeap(&dsvHeapDesc, IID_PPV_ARGS(&dsvHeap));
 
+}
+void DirectXCommon::CreateDepthView()
+{
 	//深度ビューの作成
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = DXGI_FORMAT_D32_FLOAT; //深度値フォーマット
@@ -256,7 +259,6 @@ void DirectXCommon::InitializeDepthBuffer()
 		dsvHeap->GetCPUDescriptorHandleForHeapStart());
 
 }
-
 void DirectXCommon::InitializeFence()
 {
 	HRESULT result;

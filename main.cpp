@@ -51,11 +51,12 @@ winApp->Initialize();
 			break;
 		}
 
+		mesh->Update(dxCommon->GetDevice());
 		// DirectX–ˆƒtƒŒ[ƒ€ˆ—@‚±‚±‚©‚ç
 		//•`‰æ‘Oˆ—
 		dxCommon->PreDraw();
 
-		mesh->Draw(commandList.Get());
+		mesh->Draw(dxCommon->GetCommandList());
 
 		//•`‰æŒãˆ—
 		dxCommon->PostDraw();

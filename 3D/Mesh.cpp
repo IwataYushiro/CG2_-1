@@ -9,6 +9,7 @@ Mesh::Mesh()
 
 Mesh::~Mesh()
 {
+	delete input_;
 }
 
 void Mesh::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
@@ -16,6 +17,7 @@ void Mesh::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
 	HRESULT result;
 	this->winApp_ = winApp;
 	this->dxCommon_ = dxCommon;
+	input_ = new Input();
 	//シングルトンインスタンスを取得
 	input_->Initialize(winApp_);
 
@@ -318,6 +320,9 @@ void Mesh::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
 	//ハンドルの指す位置にシェーダーリソースビュー作成
 	dxCommon_->GetDevice()->CreateShaderResourceView(texbuff2.Get(), &srvDesc2, srvHandle);
 
+	//深度バッファ
+	dxCommon_->InitializeDepthBuffer();
+
 	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
 
@@ -325,6 +330,7 @@ void Mesh::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
 	vertBuff->Unmap(0, nullptr);
 
 	//頂点バッファビューの作成
+	dxCommon_->CreateDepthView();
 	// GPU仮想アドレス
 	vdView.BufferLocation = vertBuff->GetGPUVirtualAddress();
 	// 頂点バッファのサイズ
@@ -450,6 +456,11 @@ void Mesh::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
 	//ブレンドステートの設定
 	//pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask
 	//	= D3D12_COLOR_WRITE_ENABLE_ALL;//RGBA全てのチャンネルを描画
+	//デプスステンシルステートの設定
+	pipelineDesc.DepthStencilState.DepthEnable = true;//深度テストを行う
+	pipelineDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	pipelineDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	pipelineDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;
 
 	//レンダーターゲットのブレンド設定
 	D3D12_RENDER_TARGET_BLEND_DESC& blenddesc = pipelineDesc.BlendState.RenderTarget[0];
@@ -469,17 +480,13 @@ void Mesh::Initialize(WinApp* winApp, DirectXCommon* dxCommon)
 	pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
 	//図形の形状の設定
 	pipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	
 	//その他の設定
 	pipelineDesc.NumRenderTargets = 1;								//描画対象は1つ
 	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;	//0～255指定のRGBA
 	pipelineDesc.SampleDesc.Count = 1;								//1ピクセルにつき1サンプリング
 
-	//デプスステンシルステートの設定
-	pipelineDesc.DepthStencilState.DepthEnable = true;							//深度テストを行う
-	pipelineDesc.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL; //書き込み許可
-	pipelineDesc.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;		//小さければ合格
-	pipelineDesc.DSVFormat = DXGI_FORMAT_D32_FLOAT;								//深度値フォーマット
-
+	
 	//デスクリプタレンジの設定
 	D3D12_DESCRIPTOR_RANGE descriptorRange{};
 	descriptorRange.NumDescriptors = 1;								//一度の描画に使うテクスチャが1枚なので1

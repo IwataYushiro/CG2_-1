@@ -26,6 +26,8 @@ public:
 	void InitializeRenderTargetView();
 	//深度バッファの初期化
 	void InitializeDepthBuffer();
+	//深度ビュー作成
+	void CreateDepthView();
 	//フェンス初期化
 	void InitializeFence();
 
@@ -53,6 +55,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap> rtvHeap = nullptr;
 	//深度ビュー用
 	ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
+	ComPtr<ID3D12Resource> depthBuff = nullptr;
 	// バックバッファ
 	std::vector<ComPtr<ID3D12Resource>> backBuffers;
 	// フェンス
@@ -69,4 +72,6 @@ private:
 public://アクセッサ置き場
 	//デバイス取得
 	ID3D12Device* GetDevice() const { return device.Get(); }
+	//コマンドリスト取得
+	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
 };
