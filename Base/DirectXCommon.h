@@ -2,6 +2,7 @@
 #include <chrono>
 #include <d3d12.h>
 #include <dxgi1_6.h>
+#include <thread>
 #include <vector>
 #include <wrl.h>
 
