@@ -4,6 +4,7 @@
 
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
+#pragma comment(lib,"winmm.lib")
 
 using namespace Microsoft::WRL;
 
@@ -17,6 +18,8 @@ void DirectXCommon::Initialize(WinApp* winApp)
 #pragma region DirectX初期化
 	//FPS固定初期化
 	InitializeFixFPS();
+	//システムタイマーの分解能を上げる
+	timeBeginPeriod(1);
 	//デバイスの初期化
 	InitializeDevice();
 	//コマンド関連の初期化
@@ -377,15 +380,15 @@ void DirectXCommon::UpdateFixFPS()
 		std::chrono::duration_cast<std::chrono::microseconds>(now - referense_);
 
 	//1/60秒(よりわずかに短い期間)経っていない場合
-	if (elapsed < kMinTime)
+	if (elapsed < kMinChackTime)
 	{
-		//
+		//1/60秒経過するまで微小なsleepを繰り返す
 		while (std::chrono::steady_clock::now() - referense_ < kMinTime)
 		{
 			//1マイクロ秒スリープ
 			std::this_thread::sleep_for(std::chrono::microseconds(1));
 		}
 	}
-	//
+	//現在の時間を記録する
 	referense_ = std::chrono::steady_clock::now();
 }
