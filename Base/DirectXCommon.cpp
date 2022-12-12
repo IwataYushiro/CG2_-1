@@ -15,6 +15,8 @@ void DirectXCommon::Initialize(WinApp* winApp)
 	this->winApp_ = winApp;
 
 #pragma region DirectX初期化
+	//FPS固定初期化
+	InitializeFixFPS();
 	//デバイスの初期化
 	InitializeDevice();
 	//コマンド関連の初期化
@@ -178,7 +180,7 @@ void DirectXCommon::InitializeRenderTargetView()
 
 #pragma region レンダビューターゲット
 	// デスクリプタヒープの設定
-	
+
 	rtvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV; // レンダーターゲットビュー
 	rtvHeapDesc.NumDescriptors = swapChainDesc.BufferCount; // 裏表の2つ
 	// デスクリプタヒープの生成
@@ -230,7 +232,7 @@ void DirectXCommon::InitializeDepthBuffer()
 	depthClearValue.Format = DXGI_FORMAT_D32_FLOAT;//深度値フォーマット
 
 	//深度バッファ生成
-	
+
 	result = device->CreateCommittedResource(
 		&depthHeapProp,
 		D3D12_HEAP_FLAG_NONE,
@@ -263,7 +265,7 @@ void DirectXCommon::InitializeFence()
 {
 	HRESULT result;
 #pragma region フェンス生成
-	
+
 	result = device->CreateFence(fenceVal, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 #pragma endregion
 }
@@ -273,7 +275,7 @@ void DirectXCommon::PreDraw()
 	// バックバッファの番号を取得(2つなので0番か1番)
 	UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 	// 1.リソースバリアで書き込み可能に変更
-	
+
 	barrierDesc.Transition.pResource = backBuffers[bbIndex].Get(); // バックバッファを指定
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT; // 表示状態から
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画状態へ
@@ -283,7 +285,7 @@ void DirectXCommon::PreDraw()
 	// レンダーターゲットビューのハンドルを取得
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvHeap->GetCPUDescriptorHandleForHeapStart();
 	rtvHandle.ptr += static_cast<unsigned long long>(bbIndex) * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
-	
+
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
 
@@ -317,7 +319,7 @@ void DirectXCommon::PreDraw()
 void DirectXCommon::PostDraw()
 {
 	HRESULT result;
-	
+
 	// 5.リソースバリアを戻す
 	barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;	//描画状態から
 	barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;			//表示状態へ
@@ -345,6 +347,8 @@ void DirectXCommon::PostDraw()
 		WaitForSingleObject(event, INFINITE);
 		CloseHandle(event);
 	}
+	//FPS固定
+	UpdateFixFPS();
 
 	//キューをクリア
 	result = cmdAllocator->Reset();
@@ -352,4 +356,17 @@ void DirectXCommon::PostDraw()
 	//再びコマンドリストを貯める準備
 	result = commandList->Reset(cmdAllocator.Get(), nullptr);
 	assert(SUCCEEDED(result));
+}
+
+void DirectXCommon::InitializeFixFPS()
+{
+	referense_ = std::chrono::steady_clock::now();
+}
+
+void DirectXCommon::UpdateFixFPS()
+{
+	//1/60秒ぴったりの時間
+	const std::chrono::microseconds kMinTime(uint64_t(1000000.0f / 60.0f));
+	//1/60秒よりわずかに短い時間
+	const std::chrono::microseconds kMinChackTime(uint64_t(1000000.0f / 65.0f));
 }

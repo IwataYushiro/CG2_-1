@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <vector>
@@ -74,4 +75,12 @@ public://アクセッサ置き場
 	ID3D12Device* GetDevice() const { return device.Get(); }
 	//コマンドリスト取得
 	ID3D12GraphicsCommandList* GetCommandList() const { return commandList.Get(); }
+
+private://メンバ関数
+	//FPS固定初期化
+	void InitializeFixFPS();
+	//FPS固定更新
+	void UpdateFixFPS();
+	//記録時間(FPS固定用)
+	std::chrono::steady_clock::time_point referense_;
 };
