@@ -1,6 +1,7 @@
 #pragma once
 #include "DirectXCommon.h"
-#include <DirectXMath.h>
+#include <d3d12.h>
+#include <wrl.h>
 
 //スプライト基盤クラス
 
@@ -18,6 +19,7 @@ private://メンバ変数
 
 	DirectXCommon* dxCommon_ = nullptr;
 
+	
 public://アクセッサ
 
 	DirectXCommon* GetDxCommon() { return dxCommon_; }

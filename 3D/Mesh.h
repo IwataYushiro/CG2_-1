@@ -81,7 +81,7 @@ public:
 	void CreateConstBufferMaterial3d(Material3d* material, ID3D12Device* device);
 	void CreateConstBufferObject3d(Object3d* object, ID3D12Device* device);
 	//
-	void CreateTextureBuffer(ID3D12Device* device, D3D12_RESOURCE_DESC resDesc);
+	//void CreateTextureBuffer(ID3D12Device* device, D3D12_RESOURCE_DESC resDesc);
 	//オブジェクトの初期化
 	void SetObject3ds(int num);
 
