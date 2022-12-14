@@ -4,7 +4,7 @@
 #include "SpriteCommon.h"
 #include "Sprite.h"
 
-#pragma comment(lib,"d3dcompiler.lib")
+//#pragma comment(lib,"d3dcompiler.lib")
 
 // Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
@@ -57,8 +57,16 @@ winApp->Initialize();
 		// DirectX毎フレーム処理　ここから
 		//描画前処理
 		dxCommon->PreDraw();
-
+		
+		//背景スプライト描画
+		sprCommon->PreDraw();
+		sprite->Draw();
+		//モデル描画
+		
+		//前景スプライト描画 
+		
 		//描画後処理
+		
 		dxCommon->PostDraw();
 		// 4.描画コマンドここまで
 
@@ -68,9 +76,11 @@ winApp->Initialize();
 	winApp->Finalize();
 
 	//解放
-	delete winApp;
-	delete dxCommon;
+	delete sprite;
+	delete sprCommon;
 	delete input;
+	delete dxCommon;
+	delete winApp;
 	//コンソールへの文字出力
 	OutputDebugStringA("Hello DilectX!!\n");
 

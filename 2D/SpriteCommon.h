@@ -7,26 +7,26 @@
 
 class SpriteCommon
 {
-public: // メンバ関数
+public: 
 	//エイリアステンプレートとかで色々省略
 	template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 public://メンバ関数
 
-	SpriteCommon();
-	~SpriteCommon();
-
 	//初期化
 	void Initialize(DirectXCommon* dxCommon);
+
+	//描画前処理
+	void PreDraw();
 
 private://メンバ変数
 
 	DirectXCommon* dxCommon_ = nullptr;
 
-	//ルートシグネチャ
-	ComPtr<ID3D12RootSignature> rootSignature;
-
+	
 	//パイプラインステートの生成
-	ComPtr<ID3D12PipelineState> pipelineState = nullptr;
+	ComPtr<ID3D12PipelineState> pipelineState;
+//ルートシグネチャ
+	ComPtr<ID3D12RootSignature> rootSignature;
 
 public://アクセッサ
 

@@ -6,13 +6,7 @@
 
 #pragma comment(lib,"d3dcompiler.lib")
 
-SpriteCommon::SpriteCommon()
-{
-}
-
-SpriteCommon::~SpriteCommon()
-{
-}
+using namespace Microsoft::WRL;
 
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
@@ -27,7 +21,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 
 	//頂点シェーダ読み込み
 	result = D3DCompileFromFile(
-		L"Resources/Shader/SpriteVS.hlsl",					//シェーダファイル名
+		L"Resources/shader/SpriteVS.hlsl",					//シェーダファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード出来るように
 		"main", "vs_5_0",									//エントリーポイント名、シェーダモデル
@@ -49,7 +43,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 
 	//ピクセルシェーダ読み込み
 	result = D3DCompileFromFile(
-		L"Resources/Shader/SpritePS.hlsl",					//シェーダファイル名
+		L"Resources/shader/SpritePS.hlsl",					//シェーダファイル名
 		nullptr,
 		D3D_COMPILE_STANDARD_FILE_INCLUDE,					//インクルード出来るように
 		"main", "ps_5_0",									//エントリーポイント名、シェーダモデル
@@ -71,9 +65,12 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 	}
 
 	//頂点レイアウト
-	D3D12_INPUT_ELEMENT_DESC InputLayout[] = {
-
-		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D12_APPEND_ALIGNED_ELEMENT,D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0},
+	D3D12_INPUT_ELEMENT_DESC inputLayout[] = {
+		{
+		"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,
+		D3D12_APPEND_ALIGNED_ELEMENT,
+		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA,0
+		},
 
 	};
 
@@ -96,8 +93,8 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 	//ブレンドステート
 	pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask =D3D12_COLOR_WRITE_ENABLE_ALL;	//RGBA全てのチャンネルを描画
 	//頂点レイアウト
-	pipelineDesc.InputLayout.pInputElementDescs = InputLayout;
-	pipelineDesc.InputLayout.NumElements = _countof(InputLayout);
+	pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
+	pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
 	//プリミティブ形状
 	pipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	//その他
@@ -116,6 +113,7 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 	result = dxCommon_->GetDevice()->CreateRootSignature(
 		0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(result));
+
 	rootSigBlob->Release();
 	//パイプラインにルートシグネチャをセット
 	pipelineDesc.pRootSignature = rootSignature.Get();
@@ -123,4 +121,14 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 	//パイプラインステート生成
 	result = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&pipelineDesc, IID_PPV_ARGS(&pipelineState));
 	assert(SUCCEEDED(result));
+}
+
+void SpriteCommon::PreDraw()
+{
+	//プリミティブ形状の設定コマンド
+	dxCommon_->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	//パイプラインステートとルートシグネチャの設定
+	dxCommon_->GetCommandList()->SetPipelineState(pipelineState.Get());
+	dxCommon_->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
 }

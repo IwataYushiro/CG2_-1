@@ -2,26 +2,11 @@
 
 using namespace DirectX;
 
-Sprite::Sprite()
-{
-}
-
-Sprite::~Sprite()
-{
-}
-
 void Sprite::Initialize(SpriteCommon* spCommon)
 {
 	HRESULT result{};
 	assert(spCommon);
 	this->spCommon_ = spCommon;
-
-	//頂点データ
-	XMFLOAT3 vertices[] = {
-		{-0.5f,-0.5f,0.0f},
-		{-0.5f,+0.5f,0.0f},
-		{+0.5f,-0.5f,0.0f},
-	};
 
 	//サイズ
 	UINT sizeVB = static_cast<UINT>(sizeof(XMFLOAT3) * _countof(vertices));
@@ -47,13 +32,13 @@ void Sprite::Initialize(SpriteCommon* spCommon)
 		&resDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&vertbuff));
+		IID_PPV_ARGS(&vertBuff));
 	
 	assert(SUCCEEDED(result));
 
 	//GPU上のバッファに対応した仮想メモリを取得
 	XMFLOAT3* vertMap = nullptr;
-	result = vertbuff->Map(0, nullptr, (void**)&vertMap);
+	result = vertBuff->Map(0, nullptr, (void**)&vertMap);
 	assert(SUCCEEDED(result));
 	
 	//全頂点に対して
@@ -62,13 +47,21 @@ void Sprite::Initialize(SpriteCommon* spCommon)
 		vertMap[i] = vertices[i];	//座標をコピー
 	}
 	//繋がりを解除
-	vertbuff->Unmap(0, nullptr);
+	vertBuff->Unmap(0, nullptr);
 
 	//頂点バッファビュー
 	//GPU仮想アドレス
-	vbView.BufferLocation = vertbuff->GetGPUVirtualAddress();
+	vbView.BufferLocation = vertBuff->GetGPUVirtualAddress();
 	//頂点バッファのサイズ
 	vbView.SizeInBytes = sizeVB;
 	//頂点一つ分のサイズ
-	vbView.StrideInBytes = sizeof(XMFLOAT3);
+	vbView.StrideInBytes = sizeof(vertices[0]);
+}
+
+void Sprite::Draw()
+{
+	//頂点バッファビューの設定コマンド
+	spCommon_->GetDxCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vbView);
+	//描画コマンド
+	spCommon_->GetDxCommon()->GetCommandList()->DrawInstanced(_countof(vertices), 1, 0, 0);
 }
