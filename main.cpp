@@ -1,8 +1,8 @@
 #include "WinApp.h"
 #include "DirectXCommon.h"
 #include "Input.h"
-
-const float PI = 3.141592f;					//const floatでいい
+#include "SpriteCommon.h"
+#include "Sprite.h"
 
 #pragma comment(lib,"d3dcompiler.lib")
 
@@ -13,6 +13,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	WinApp* winApp = new WinApp();
 	
 	DirectXCommon* dxCommon = new DirectXCommon();
+
+	SpriteCommon* sprCommon = new SpriteCommon();
+
+	Sprite* sprite = new Sprite();
 
 	Input* input = new Input();
 
@@ -30,8 +34,13 @@ winApp->Initialize();
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
 	
+	//入力
 	input->Initialize(winApp);
-	
+
+	//スプライト関係
+	sprCommon->Initialize(dxCommon);
+	sprite->Initialize(sprCommon);
+
 #pragma endregion
 	// 描画初期化処理　ここまで
 
