@@ -11,7 +11,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #pragma region ポインタ置き場
 	WinApp* winApp = new WinApp();
-	
+
 	DirectXCommon* dxCommon = new DirectXCommon();
 
 	SpriteCommon* sprCommon = new SpriteCommon();
@@ -23,7 +23,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #pragma endregion
 
 #pragma region Windows初期化
-winApp->Initialize();
+	winApp->Initialize();
 #pragma endregion
 	// DirectX初期化処理　ここから
 
@@ -33,7 +33,7 @@ winApp->Initialize();
 
 	// 描画初期化処理　ここから
 #pragma region 描画初期化処理
-	
+
 	//入力
 	input->Initialize(winApp);
 
@@ -57,21 +57,21 @@ winApp->Initialize();
 		// DirectX毎フレーム処理　ここから
 		//描画前処理
 		dxCommon->PreDraw();
-		
+
 		//背景スプライト描画
 		sprCommon->PreDraw();
 		sprite->Draw();
 		//モデル描画
-		
+
 		//前景スプライト描画 
-		
+
 		//描画後処理
-		
+
 		dxCommon->PostDraw();
 		// 4.描画コマンドここまで
 
 		// DirectX毎フレーム処理　ここまで
-
+		
 	}
 	winApp->Finalize();
 

@@ -4,7 +4,7 @@ using namespace DirectX;
 
 void Sprite::Initialize(SpriteCommon* spCommon)
 {
-	HRESULT result{};
+	HRESULT result;
 	assert(spCommon);
 	this->spCommon_ = spCommon;
 

@@ -10,15 +10,11 @@ using namespace Microsoft::WRL;
 
 void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
-	HRESULT result{};
+	HRESULT result;
 	assert(dxCommon);
 	this->dxCommon_ = dxCommon;
 
-	//シェーダオブジェクト
-	ComPtr<ID3DBlob> vsBlob = nullptr;		//頂点シェーダーオブジェクト
-	ComPtr<ID3DBlob> psBlob = nullptr;		//ピクセルシェーダーオブジェクト
-	ComPtr<ID3DBlob> errorBlob = nullptr;	//エラーオブジェクト
-
+	
 	//頂点シェーダ読み込み
 	result = D3DCompileFromFile(
 		L"Resources/shader/SpriteVS.hlsl",					//シェーダファイル名
@@ -106,15 +102,13 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 	//設定
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
 	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-	// ルートシグネチャのシリアライズ
-	ComPtr<ID3DBlob> rootSigBlob = nullptr;
+	
 	result = D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &rootSigBlob, &errorBlob);
 	assert(SUCCEEDED(result));
 	result = dxCommon_->GetDevice()->CreateRootSignature(
 		0, rootSigBlob->GetBufferPointer(), rootSigBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(result));
 
-	rootSigBlob->Release();
 	//パイプラインにルートシグネチャをセット
 	pipelineDesc.pRootSignature = rootSignature.Get();
 

@@ -22,11 +22,17 @@ private://メンバ変数
 
 	DirectXCommon* dxCommon_ = nullptr;
 
-	
+	//シェーダオブジェクト
+	ComPtr<ID3DBlob> vsBlob = nullptr;		//頂点シェーダーオブジェクト
+	ComPtr<ID3DBlob> psBlob = nullptr;		//ピクセルシェーダーオブジェクト
+	ComPtr<ID3DBlob> errorBlob = nullptr;	//エラーオブジェクト
+
 	//パイプラインステートの生成
 	ComPtr<ID3D12PipelineState> pipelineState;
 //ルートシグネチャ
 	ComPtr<ID3D12RootSignature> rootSignature;
+	// ルートシグネチャのシリアライズ
+	ComPtr<ID3DBlob> rootSigBlob = nullptr;
 
 public://アクセッサ
 

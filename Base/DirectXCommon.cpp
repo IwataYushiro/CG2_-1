@@ -290,18 +290,18 @@ void DirectXCommon::PreDraw()
 	rtvHandle.ptr += static_cast<unsigned long long>(bbIndex) * device->GetDescriptorHandleIncrementSize(rtvHeapDesc.Type);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvHeap->GetCPUDescriptorHandleForHeapStart();
-	commandList->OMSetRenderTargets(1, &rtvHandle, false, &dsvHandle);
+	commandList->OMSetRenderTargets(1, &rtvHandle, false, nullptr/*&dsvHandle*/);
 
 	// 3.画面クリア			R	  G		B	A
 	FLOAT clearColor[] = { 0.1f,0.25f,0.5f,0.0f }; //青っぽい色
 	commandList->ClearRenderTargetView(rtvHandle, clearColor, 0, nullptr);
-	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	//commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
 	// 4.描画コマンドここから
 	//ビューポート設定コマンド
 	D3D12_VIEWPORT viewport{};
-	viewport.Width = winApp_->window_width;
-	viewport.Height = winApp_->window_height;
+	viewport.Width = WinApp::window_width;
+	viewport.Height = WinApp::window_height;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -340,6 +340,8 @@ void DirectXCommon::PostDraw()
 	// 画面に表示するバッファをフリップ(裏表の入替え)
 	result = swapChain->Present(1, 0);
 	assert(SUCCEEDED(result));
+//FPS固定
+	UpdateFixFPS();
 
 	//コマンドの実行完了を待つ
 	commandQueue->Signal(fence.Get(), ++fenceVal);
@@ -350,9 +352,7 @@ void DirectXCommon::PostDraw()
 		WaitForSingleObject(event, INFINITE);
 		CloseHandle(event);
 	}
-	//FPS固定
-	UpdateFixFPS();
-
+	
 	//キューをクリア
 	result = cmdAllocator->Reset();
 	assert(SUCCEEDED(result));
