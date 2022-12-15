@@ -82,17 +82,50 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 
 	//サンプルマスク
 	pipelineDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;	//標準設定
+	
 	//ラスタライザ
 	pipelineDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;	//カリングしない
 	pipelineDesc.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID;	//塗りつぶし
 	pipelineDesc.RasterizerState.DepthClipEnable = true;	//深度クリッピングを有効化
+	
 	//ブレンドステート
-	pipelineDesc.BlendState.RenderTarget[0].RenderTargetWriteMask =D3D12_COLOR_WRITE_ENABLE_ALL;	//RGBA全てのチャンネルを描画
+	D3D12_RENDER_TARGET_BLEND_DESC& blenddesc = pipelineDesc.BlendState.RenderTarget[0];
+	blenddesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;	//RGBA全てのチャンネルを描画
+	
+	//ブレンド共通設定(これ＋合成で動く)
+	blenddesc.BlendEnable = true;					//ブレンドを有効にする
+	blenddesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;	//加算
+	blenddesc.SrcBlendAlpha = D3D12_BLEND_ONE;		//ソースの値を100％使う
+	blenddesc.DestBlendAlpha = D3D12_BLEND_ZERO;	//デストの値を0％使う
+	//半透明合成(アルファブレンディング　デフォルト)
+	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;			//加算
+	blenddesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;		//ソースのアルファ値
+	blenddesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;//1.0f-ソースのアルファ値
+	/*
+	//加算合成
+	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;					//加算
+	blenddesc.SrcBlend = D3D12_BLEND_ONE;					//ソースのアルファ値
+	blenddesc.DestBlend = D3D12_BLEND_ONE;					//デストのアルファ値
+
+	//減算合成
+	blenddesc.BlendOp = D3D12_BLEND_OP_REV_SUBTRACT;		//減算
+	blenddesc.SrcBlend = D3D12_BLEND_ONE;					//ソースのアルファ値
+	blenddesc.DestBlend = D3D12_BLEND_ONE;					//デストのアルファ値
+
+	//色反転
+	blenddesc.BlendOp = D3D12_BLEND_OP_ADD;					//加算
+	blenddesc.SrcBlend = D3D12_BLEND_INV_DEST_COLOR;		//ソースのアルファ値
+	blenddesc.DestBlend = D3D12_BLEND_ZERO;					//デストのアルファ値
+
+	*/
+	
 	//頂点レイアウト
 	pipelineDesc.InputLayout.pInputElementDescs = inputLayout;
 	pipelineDesc.InputLayout.NumElements = _countof(inputLayout);
+	
 	//プリミティブ形状
 	pipelineDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	
 	//その他
 	pipelineDesc.NumRenderTargets = 1;								//描画対象は1つ
 	pipelineDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;	//0～255指定のRGBA
